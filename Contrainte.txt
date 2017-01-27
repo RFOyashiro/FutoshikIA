@@ -1,0 +1,138 @@
+X11 X12 X13
+X21 X22 X23
+X31 X32 X33
+
+domaines de valeur : 1 - n
+
+modéliser les contraintes
+
+Xa1 != Xa2-n ...
+
+liste d'adjacen(s/c)es
+
+int[int[]] ?
+
+valgrind -> check accès mémoire => DL
+-g3 (pour compiler)
+-O3 (quand programme fonctionne !) à la compilation
+
+/*
+Contraintes (n=3):
+x11 != x12
+x11 != x13
+x11 != x21
+x11 != x31
+*/
+
+
+
+exemple avec n = 3 :
+
+fichier : 
+3
+0 2 0 
+.v.
+0 0>0 
+...
+0 0 0 
+
+contraintes :
+- tab élément 1 & tab operateur & tab élément 2
+- ordre opérateur : diff -> inf -> sup -> egal
+
+ligne 1     : n => contraintes de différences et contraintes de domaines
+autre ligne : ajuster contraintes de domaines et ajout contraintes d'ordre
+
+el1 op el2
+
+x11 != x12
+x11 != x13
+x11 != x21
+x11 != x31
+
+x12 != x11
+x12 != x13
+x12 != x22
+x12 != x32
+x12 >  x22
+x12 =  {2}
+
+x13 != x11
+x13 != x12
+x13 != x32
+x13 != x33
+
+x21 != x22
+x21 != x23
+x21 != x11
+x21 != x31
+
+x22 != x21
+x22 != x23
+x22 != x12
+x22 != x32
+x22 <  x12
+x22 >  x23
+
+x23 != x21
+x23 != x22
+x23 != x13
+x23 != x31
+x23 <  x22
+
+x31 != x32
+x31 != x33
+x31 != x11
+x31 != x21
+
+x32 != x31
+x32 != x33
+x32 != x12
+x32 != x22
+
+x33 != x31
+x33 != x32
+x33 != x13
+x33 != x23
+
+
+Modélisation : 
+
+struct {
+	int ligne;
+	int colone;
+	int domaine[];
+	int adjacences[]; //indices de toutes les contraintes de la case
+} CASE
+
+struct {
+	enum operateur {DIF, SUP, INF};
+	CASE * elementDroite;
+	CASE * elementGauche;
+} CONTRAINTE
+
+CONTRAINTE contraintes[];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
