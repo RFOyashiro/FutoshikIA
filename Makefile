@@ -17,4 +17,4 @@ futoshiki: futoshiki.c $(OBJ)
 
 clean:
 	- rm -f $(OBJ)
-- rm -f futoshiki
+	- rm -f futoshiki

@@ -113,7 +113,10 @@ struct {
 
 CONTRAINTE contraintes[];
 
-
+ligne - 1 * N < case < (ligne * N)
+		0 <= case < 4
+		5 <= case < 9
+		10 <=
 
 
 
