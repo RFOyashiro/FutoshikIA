@@ -1,0 +1,24 @@
+gcc -Wall -ggdb -o futoshiki.exe futoshiki.c 
+futoshiki.c: In function 'initGrid':
+futoshiki.c:90:16: warning: variable 'cont' set but not used [-Wunused-but-set-variable]
+     CONTRAINTE cont;
+                ^
+futoshiki.c:110:9: warning: "/*" within comment [-Wcomment]
+         /*int k = 0;
+         ^
+futoshiki.c:116:10: warning: "/*" within comment [-Wcomment]
+         }/*
+          ^
+futoshiki.c:120:7: warning: "/*" within comment [-Wcomment]
+       /*CASE thisCase;
+       ^
+futoshiki.c:135:8: warning: "/*" within comment [-Wcomment]
+       }/*
+        ^
+futoshiki.c:154:12: warning: return from incompatible pointer type [-Wincompatible-pointer-types]
+     return cases;
+            ^
+futoshiki.c:154:12: warning: function returns address of local variable [-Wreturn-local-addr]
+futoshiki.c:48:9: warning: unused variable 'isLineWithNumber' [-Wunused-variable]
+     int isLineWithNumber = 1;
+         ^

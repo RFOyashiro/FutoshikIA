@@ -1,0 +1,9 @@
+called: C:\cygwin\bin\gcc.exe
+	C:\Users\Medar\Documents\NetBeansProjects\FutoshikIA
+	C:\cygwin\bin\gcc.exe
+	-Wall
+	-ggdb
+	-o
+	futoshiki.exe
+	futoshiki.c
+
