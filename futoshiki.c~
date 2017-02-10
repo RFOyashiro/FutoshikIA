@@ -55,9 +55,10 @@ char getOpChar(enum operateur op) {
 void displayConstraint(size_t numConst, CONTRAINTE * constr) {
 	printf("CONSTRAINT num %zu\n", numConst);
 	char op = getOpChar(constr->op);
-	printf("    (%zu,%zu)", constr->gauche->x, constr->gauche->y);
-	printf(" %c ", op);
-	printf("(%zu,%zu)\n", constr->droite->x, constr->droite->y);	
+	printf("    (%zu,%zu)" %c (%zu,%zu)\n", constr->gauche->x, constr->gauche->y,
+		op, constr->droite->x, constr->droite->y);	
+	printf();
+	printf();	
 }
 
 void displayCase (size_t numCase, CASE *caseToDisplay) {
