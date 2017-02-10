@@ -1,7 +1,7 @@
 CC = gcc
 
 LIBS = -lm 
-CCFLAGS = -Wall -ggdb -g3
+CCFLAGS = -Wall -ggdb
 
 OBJ = 
 

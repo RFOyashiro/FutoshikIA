@@ -7,8 +7,8 @@ enum operateur {
 };
 
 typedef struct CASE {
-	size_t x;
-	size_t y;
+	// Index in grid
+	size_t ind;
 	int * domaine;
 	// indices de toutes les contraintes de la case dans le tableau contraintes
 	size_t * conts;
@@ -55,16 +55,13 @@ char getOpChar(enum operateur op) {
 void displayConstraint(size_t numConst, CONTRAINTE * constr) {
 	printf("CONSTRAINT num %zu\n", numConst);
 	char op = getOpChar(constr->op);
-	printf("    (%zu,%zu)" %c (%zu,%zu)\n", constr->gauche->x, constr->gauche->y,
-		op, constr->droite->x, constr->droite->y);	
-	printf();
-	printf();	
+	printf("    %zu", constr->gauche->ind);
+	printf(" %c ", op);
+	printf("%zu\n", constr->droite->ind);	
 }
 
-void displayCase (size_t numCase, CASE *caseToDisplay) {
-	printf("CASE num %zu\n", numCase);
-	printf("    x = %zu\n", caseToDisplay->x);
-	printf("    y = %zu\n", caseToDisplay->y);
+void displayCase (CASE *caseToDisplay) {
+	printf("CASE num %zu\n", caseToDisplay->ind);
 	printf("    domaine = {");
 	int i;
 	for(i = 0; i < lineSize; ++i) {
@@ -77,23 +74,18 @@ void displayGrid() {
 	size_t i;
 	for (i = 0; i < lineSize * lineSize; ++i) {
 		CASE * currentCase = &grid[i];
-		displayCase(i, currentCase);
+		displayCase(currentCase);
 		printf("\n");
 	}
 }
 
 void initAllCases(CASE * grid) {
-	int comptLine = -1;
 	size_t i;
 	for (i = 0; i < lineSize * lineSize; ++i) {
-	
-		if (i % lineSize == 0)
-			comptLine++;
-		
 		CASE currentCase;
-		currentCase.y = i % lineSize;
-		currentCase.x = comptLine;
 
+		currentCase.ind = i;		
+		
 		// Initialisation du domaine
 		currentCase.domaine = malloc(lineSize * sizeof (int));
 		size_t m;
@@ -111,64 +103,68 @@ void initAllCases(CASE * grid) {
 void initBasicConstraints(CASE *grid) {
 	
 	size_t numCurrentCase = 0;
-	size_t indDebLigne = 0;
+	size_t indEndLine;
 	size_t lastConstInd = 0;
 	
-	for (numCurrentCase = 0; numCurrentCase < nbContraintes; ++numCurrentCase) {
+	for (numCurrentCase = 0; numCurrentCase < lineSize * lineSize; ++numCurrentCase) {
 		CASE * currentCase = &grid[numCurrentCase];
 		
-		displayCase(numCurrentCase, currentCase);
+		displayCase(currentCase);
 		printf("\n");
 
-		// Recherche de l'indice de la case de debut de la ligne
-		while (!(indDebLigne == currentCase->x * lineSize)) {
-
-			indDebLigne += lineSize;
-		}		
+		indEndLine = numCurrentCase;
 		
-		printf("indDebLigne : %zu\n", indDebLigne);
+		// Recherche de l'indice de la case de debut de la ligne si != debu de linge
+		if (indEndLine % lineSize == 0) {
+			indEndLine += lineSize;
+		}
+		else {
+			while (!(indEndLine % lineSize == 0)) {
+
+				indEndLine++;
+			}
+		}
+		
+		printf("indEndLine : %zu\n", indEndLine);
 
 		// Ajout de toutes les contraintes de la ligne courante a 
 		// partir de la case courrante car les cases precedentes ont deja mis
 		// les contraintes sur celle-ci
-		size_t indCaseDroite = indDebLigne + currentCase->y;
-		for (; indCaseDroite < indDebLigne + lineSize; ++indCaseDroite) {
+		size_t indCaseDroite = numCurrentCase + 1;
+		for (; indCaseDroite < indEndLine; ++indCaseDroite) {
 
-			if (numCurrentCase != indCaseDroite) {
-				CASE * caseDroite = &grid[indCaseDroite];
-				
-				CONTRAINTE cont;
-				cont.gauche = currentCase;
-				cont.droite = caseDroite;
-				cont.op = DIF;
-				
-				contraintes[lastConstInd] = cont;
-				currentCase->conts[currentCase->indLastConst] = lastConstInd;
-				caseDroite->conts[currentCase->indLastConst] = lastConstInd;
-				
-				displayConstraint(lastConstInd, &cont);
-				lastConstInd++;
-			}
+			CASE * caseDroite = &grid[indCaseDroite];
+			
+			CONTRAINTE cont;
+			cont.gauche = currentCase;
+			cont.droite = caseDroite;
+			cont.op = DIF;
+			
+			contraintes[lastConstInd] = cont;
+			currentCase->conts[currentCase->indLastConst++] = lastConstInd;
+			caseDroite->conts[currentCase->indLastConst++] = lastConstInd;
+			
+			displayConstraint(lastConstInd, &cont);
+			lastConstInd++;
 		}
 		
 		// Ajout de toutes les contraintes de la colonne courante
-		size_t colNumber = 1;
+		// A SORTIR DE CETE BOUCLE
+		/*size_t colNumber = 1;
 		for (; colNumber < lineSize; ++colNumber) {
 
-			CASE * caseDroite = &grid[(colNumber + currentCase->y) * lineSize - 1];
+			CASE * caseDroite = &grid[(numCurrentCase + lineSize) * colNumber];
 
-			if (caseDroite != currentCase) {
-				CONTRAINTE cont;
-				cont.gauche = currentCase;
-				cont.droite = caseDroite;
-				cont.op = DIF;
-				
-				contraintes[lastConstInd] = cont;
-				currentCase->conts[currentCase->indLastConst] = lastConstInd;
-				caseDroite->conts[currentCase->indLastConst] = lastConstInd;
-				//lastConstInd++;
-			}
-		}
+			CONTRAINTE cont;
+			cont.gauche = currentCase;
+			cont.droite = caseDroite;
+			cont.op = DIF;
+			
+			contraintes[lastConstInd] = cont;
+			currentCase->conts[currentCase->indLastConst++] = lastConstInd;
+			caseDroite->conts[currentCase->indLastConst++] = lastConstInd;
+			lastConstInd++;
+		}*/
 	}
 	
 	printf("nbConstr : %zu, lastConst : %zu\n", nbContraintes, lastConstInd);
