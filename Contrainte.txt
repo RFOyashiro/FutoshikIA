@@ -118,24 +118,6 @@ ligne - 1 * N < case < (ligne * N)
 		5 <= case < 9
 		10 <=
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Commande DrMemory windows :
+drmemory.exe -- C:\Users\Thomas\Documents\NetBeansProjects\FutoshikIA/futoshiki.exe C:\Users\Thomas\Documents\NetBeansProjects\FutoshikIA\grilles/grille1_5x5.fut
+(Ne fonctionne pas sous cygwin)
