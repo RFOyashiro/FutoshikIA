@@ -30,7 +30,7 @@ exemple avec n = 3 :
 
 fichier : 
 3
-0 2 0 
+0 2 0
 .v.
 0 0>0 
 ...
