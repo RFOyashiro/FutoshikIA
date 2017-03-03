@@ -1,17 +1,15 @@
 CC = gcc
 
 LIBS = -lm 
-CCFLAGS = -Wall -ggdb -g3
+#ajouter -o3 a la fin
+CCFLAGS = -Wall #-ggdb -g3
 
-OBJ = 
+OBJ = backTrack.o futoshiki.o
 
 all: futoshiki
 
 futoshiki: futoshiki.c $(OBJ)
-	$(CC) $(CCFLAGS) -o futoshiki.exe futoshiki.c $(OBJ)
-
-#analyseur_lexical.o: analyseur_lexical.c
-#	$(CC) $(CCFLAGS) -c analyseur_lexical.c
+	$(CC) $(CCFLAGS) -o futoshiki.exe $(OBJ)
 
 .PHONY : clean
 

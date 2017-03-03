@@ -1,39 +1,16 @@
+#include "define.h"
+#include "backTrack.h"
+
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#define DEBUG_INIT_CONST 0
-#define DEBUG_FILE_READING 1
+size_t nbContraintes = 0;
+CONTRAINTE * contraintes = NULL;
 
-// Nombre attribuer aux domaines interdits
-#define NO_DOMAINE -1
+CASE * grid = NULL;
 
-enum operateur {
-	DIF, SUP, INF
-};
-
-typedef struct CASE {
-	// Index in grid
-	size_t ind;
-	int * domaine;
-	// indices de toutes les contraintes de la case dans le tableau contraintes
-	size_t * conts;
-	// indice du dernier indice ajouter au tableau precedant
-	size_t indLastConst;
-} CASE;
-
-typedef struct CONTRAINTE {
-	enum operateur op;
-	CASE * droite;
-	CASE * gauche;
-} CONTRAINTE;
-
-size_t nbContraintes;
-CONTRAINTE * contraintes;
-
-CASE * grid;
-
-size_t lineSize;
+size_t lineSize = 0;
 
 FILE * openFile(char * fileName) {
 	FILE * grille = fopen(fileName, "r");
@@ -255,12 +232,14 @@ int parseNumberLine(char* line, size_t lineNumber) {
 		// Si on doit changer une contrainte
 		if (line[charNumber] == '<' || line[charNumber] == '>') {
 			if (charNumber == 0 || charNumber == lineSize * 2) {
-				return failInitGrid(line, "Constraint without both values detected");
+				return failInitGrid(line, 
+					"Constraint without both values detected");
 			}
 			CASE *left = &grid[charNumber / 2 + (lineNumber / 2) * lineSize];
 			
 			// Recherche de la premiere contrainte ou left est a gauche
-			// Sachant que ce sera au minium la premiere apres le nombre de case a gauche
+			// Sachant que ce sera au minium la premiere apres le nombre 
+			// de case a gauche
 			size_t i;
 			CONTRAINTE *constraint;
 			for (i = charNumber / 2; ; ++i) {
@@ -283,11 +262,13 @@ int parseNumberLine(char* line, size_t lineNumber) {
 		else if (line[charNumber] != ' ') {
 			int number;
 			if (sscanf(&line[charNumber], "%d", &number) != 1) {
-				return failInitGrid(line, "Unknown char detected on a number line");
+				return failInitGrid(line, 
+					"Unknown char detected on a number line");
 			}
 			
 			if (number != 0) {
-				CASE *currentCase = &grid[charNumber / 2 + (lineNumber / 2) * lineSize];
+				CASE *currentCase = 
+					&grid[charNumber / 2 + (lineNumber / 2) * lineSize];
 				size_t i;
 				// On enleve toutes les valeurs du domaine
 				for (i = 0; i < lineSize; ++i) {
@@ -309,8 +290,10 @@ int parseConstraintOnlyLine(char *line, size_t lineNumber) {
 		if (line[charNumber] != '.') {
 			CASE *left = &grid[charNumber + (lineNumber / 2) * lineSize];
 			CASE *right = &grid[charNumber + ((lineNumber + 1) / 2) * lineSize];
-			// Recherche la premiere contrainte de colonne ou left est a gauche et right est a droite
-			// On sait que ce sera au minimum la premiere apres le nombre de case a droite
+			// Recherche la premiere contrainte de colonne ou left 
+			// est a gauche et right est a droite
+			// On sait que ce sera au minimum la premiere apres le 
+			// nombre de case a droite
 			CONTRAINTE *constraint;
 			size_t i;
 			for (i = (lineSize - 1) - charNumber; ; ++i) {
@@ -326,11 +309,13 @@ int parseConstraintOnlyLine(char *line, size_t lineNumber) {
 				constraint->op = SUP;
 			}
 			else {
-				return failInitGrid(line, "Unknown char detected on constraint only line");
+				return failInitGrid(line, 
+					"Unknown char detected on constraint only line");
 			}
 			
 			if (DEBUG_FILE_READING)
-				displayConstraint(left->conts[ (lineSize - 1) - charNumber], constraint);
+				displayConstraint(left->conts[ (lineSize - 1) - charNumber], 
+					constraint);
 		}
 	}
 	return 1;
@@ -418,9 +403,13 @@ int main(int argc, char * argv[]) {
 		fprintf(stderr, "Erreur de lecture du fichier\n");
 		goto end;
 	}
+	
+	printf("backTrack\n");
+	backTrack(grid, lineSize, contraintes, nbContraintes);
 
 	end:
 	// Liberation memoire
 	freeGridAndConstraints();
+	closeFile(gridFile);
 	return (0);
 }
