@@ -7,7 +7,7 @@ extern "C" {
 
 #include <unistd.h>
 
-#define DEBUG_INIT_CONST 0
+#define DEBUG_INIT_CONST 1
 #define DEBUG_FILE_READING 0
 
 // Nombre attribuer aux domaines interdits

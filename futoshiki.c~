@@ -415,7 +415,7 @@ int main(int argc, char * argv[]) {
 	}
 	
 	printf("backTrack\n");
-	res = backTrack(grid, lineSize, contraintes, nbContraintes);
+	//res = backTrack(grid, lineSize, contraintes, nbContraintes);
 	if (res < 0) {
 		fprintf(stderr, "Erreur de backtrack\n");
 		goto end;

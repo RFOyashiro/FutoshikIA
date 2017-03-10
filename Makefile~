@@ -11,7 +11,7 @@ all: futoshiki
 futoshiki: futoshiki.c $(OBJ)
 	$(CC) $(CCFLAGS) -o futoshiki.exe $(OBJ)
 	
-%.o: %.c
+%.o: %.c %.h
 	$(CC) $(CCFLAGS) -c $<
 
 .PHONY : clean

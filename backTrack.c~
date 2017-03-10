@@ -77,7 +77,7 @@ int backTrack(CASE *grid, size_t lineSize,
 	// Main loop
 	int success = 1;
 	size_t currentVarInd;
-	ARRET TROP TOT
+	
 	int consistant = 1;
 	for (currentVarInd = 0; currentVarInd < lineSize * lineSize;  ++currentVarInd) {
 		AFFECTATION *curAff = &affectations[currentVarInd];
