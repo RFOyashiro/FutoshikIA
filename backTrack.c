@@ -1,7 +1,13 @@
 #include "backTrack.h"
 
+/**
+ * All the variables affectatons
+ */
 AFFECTATION *affectations;
 
+/**
+ * Free backtrack affectations
+ */
 void freeBackTrack(CASE *grid, size_t lineSize) {
 	size_t i;
 	for (i = 0; i < lineSize * lineSize; ++i) {
@@ -12,6 +18,11 @@ void freeBackTrack(CASE *grid, size_t lineSize) {
 	free(affectations);
 }
 
+/**
+ * Display an affectation for debug purpose
+ * @param affect The affectations
+ * @param lineSize The size of a line
+ */
 void displayAffectation(AFFECTATION *affect, size_t lineSize) {
 
 	CASE *caseToDisplay = affect->var;
@@ -28,6 +39,11 @@ void displayAffectation(AFFECTATION *affect, size_t lineSize) {
 
 }
 
+/**
+ * Check if a constraint is concistant
+ * @param constraint The constraint to check
+ * @return 1 if concistant, 0 otherwise or if constraint is about not affected variables.
+ */
 int checkConstraint(CONTRAINTE *constraint) {
 	// If the constraint is about a non affected var
 	if (constraint->gauche->affectation->curValue == NO_DOMAINE ||
@@ -49,6 +65,14 @@ int checkConstraint(CONTRAINTE *constraint) {
 	}
 }
 
+/**
+ * Apply backtrack technic to try to solve the futushiki grid
+ * @param grid Futushiki grid
+ * @param lineSize The size of one line of variables
+ * @param contraintes The constraints
+ * @param nbContraintes The number of constraint
+ * @return 1 if succeeded, -1 if failed (or no solution)
+ */
 int backTrack(CASE *grid, size_t lineSize,
 		CONTRAINTE *contraintes, size_t nbContraintes) {
 
@@ -71,37 +95,23 @@ int backTrack(CASE *grid, size_t lineSize,
 		curCase->affectation = curAff;
 	}
 
-	/*if (DEBUG_BACKTRACK) {
-		for (i = 0; i < lineSize * lineSize; ++i) {
-	
-			AFFECTATION * curAff = &affectations[i];
-			displayAffectation(curAff, lineSize);
-		}
-	}*/
-
 	// Main loop
 	int success = 1;
 	size_t currentVarInd;
-	// TODO : ARRET TROP TOT
 	int consistant = 1;
 	for (currentVarInd = 0; currentVarInd < lineSize * lineSize; ++currentVarInd) {
 		AFFECTATION *curAff = &affectations[currentVarInd];
 
-		//printf("\n*********************************************\n");
-
 		int j;
 
-		//displayAffectation(curAff, lineSize);
 		// Affectation
 		consistant = 0;
 		for (j = 0; j < lineSize && !consistant; ++j) {
 
-			//printf("testing %d ", curAff->curDomain[j]);
 			if (curAff->curDomain[j] != NO_DOMAINE) {
 
 				curAff->curValue = curAff->curDomain[j];
 				curAff->curDomain[j] = NO_DOMAINE;
-				//printf("Value found : %d\n", curAff->curValue);
 
 				// Check constraint
 				size_t k;
@@ -115,7 +125,6 @@ int backTrack(CASE *grid, size_t lineSize,
 
 				}
 
-				//displayAffectation(curAff, lineSize);
 				if (consistant) {
 					printf("consistant pour %zu avec la valeur %d\n", currentVarInd, curAff->curValue);
 				}

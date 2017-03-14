@@ -5,23 +5,41 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Total number of constraint
 size_t nbContraintes = 0;
+// The array of constraint
 CONTRAINTE * contraintes = NULL;
 
+// The grid itself
 CASE * grid = NULL;
 
+// The size of a line of the grid
 size_t lineSize = 0;
 
+/**
+ * Open a grid file. No real sanity check here.
+ * @param fileName The name of the file. Can be relative.
+ * @return The FILE* corresponding of the opened file. NULL if failed to open.
+ */
 FILE * openFile(char * fileName) {
 	FILE * grille = fopen(fileName, "r");
 
 	return grille;
 }
 
+/**
+ * Close an opened grid file. No sanity check here.
+ * @param file The opened file to close
+ */
 void closeFile(FILE * file) {
 	fclose(file);
 }
 
+/**
+ * Get the char corresponding to the binary operator.
+ * @param op The binary operator
+ * @return  ! = DIF, > = SUP, < = INF, E = error
+ */
 char getOpChar(enum operateur op) {
 	switch (op) {
 		case DIF:
@@ -35,6 +53,11 @@ char getOpChar(enum operateur op) {
 	}
 }
 
+/**
+ * Display a constraint for debug purpose.
+ * @param numConst The number of the constraint. Not necessarely, its just for display convinience
+ * @param constr The constraint to display
+ */
 void displayConstraint(size_t numConst, CONTRAINTE * constr) {
 	printf("CONSTRAINT num %zu : ", numConst);
 	char op = getOpChar(constr->op);
@@ -43,6 +66,10 @@ void displayConstraint(size_t numConst, CONTRAINTE * constr) {
 	printf("%zu\n", constr->droite->ind);
 }
 
+/**
+ * Display a variable (slot) for debug purpose.
+ * @param caseToDisplay The variable to display.
+ */
 void displayCase(CASE *caseToDisplay) {
 	printf("CASE num %zu\n", caseToDisplay->ind);
 	printf("    domaine = {");
@@ -55,6 +82,9 @@ void displayCase(CASE *caseToDisplay) {
 	printf("}\n");
 }
 
+/**
+ * Display all the variables of the grid for debug purpose.
+ */
 void displayGrid() {
 	size_t i;
 	for (i = 0; i < lineSize * lineSize; ++i) {
@@ -64,6 +94,10 @@ void displayGrid() {
 	}
 }
 
+/**
+ * Initialize all the variables. Malloc them, malloc their domain and malloc their conts. lineSize must be initialize.
+ * @param grid The grid to take variable of.
+ */
 void initAllCases(CASE * grid) {
 	size_t i;
 	for (i = 0; i < lineSize * lineSize; ++i) {
@@ -86,6 +120,11 @@ void initAllCases(CASE * grid) {
 	}
 }
 
+/**
+ * Init all constraints, assigning left and right operands (and make them point to this constraint). By default all constraint
+ * are DIF constraint. lineSize must be initialize.
+ * @param grid The gride to take variables of. 
+ */
 void initBasicConstraints(CASE *grid) {
 
 	size_t numCurrentCase = 0;
@@ -103,7 +142,7 @@ void initBasicConstraints(CASE *grid) {
 
 		indEndLine = numCurrentCase;
 
-		// Recherche de l'indice de la case de debut de la ligne si != debut de linge
+		// Recherche de l'indice de la case de debut de la prochaine ligne si != debut de ligne
 		if (indEndLine % lineSize == 0) {
 			indEndLine += lineSize;
 		}
@@ -119,7 +158,7 @@ void initBasicConstraints(CASE *grid) {
 		}
 
 		// Ajout de toutes les contraintes de la ligne courante a 
-		// partir de la case courrante car les cases precedentes ont deja mis
+		// partir de la case courrante car les cases precedentes ont deja misent
 		// les contraintes sur celle-ci (pas de redondance des contraintes)
 		size_t indCaseDroite = numCurrentCase + 1;
 		for (; indCaseDroite < indEndLine; ++indCaseDroite) {
@@ -189,6 +228,12 @@ void initBasicConstraints(CASE *grid) {
 	}
 }
 
+/**
+ * Function called if an error has been found while initializing the grid. Espacially if the file is malformed.
+ * @param line The current line
+ * @param msg The error message
+ * @return -1
+ */
 int failInitGrid(char *line, char *msg) {
 	fprintf(stderr, "%s\n", msg);
 	if (line)
@@ -196,6 +241,11 @@ int failInitGrid(char *line, char *msg) {
 	return -1;
 }
 
+/**
+ * Initialize the grid with all variables and constraints.
+ * @param gridFile The grid file
+ * @return -1 if failed, 1 if succeded
+ */
 int initGrid(FILE *gridFile) {
 	char * line = NULL;
 	size_t len = 0;
@@ -235,6 +285,12 @@ int initGrid(FILE *gridFile) {
 	return 1;
 }
 
+/**
+ * Pars a line which should contains domain constraint.
+ * @param line The line to parse
+ * @param lineNumber The number of the line
+ * @return 1 if succeed, -1 if failed (espacially if file is malformed)
+ */
 int parseNumberLine(char* line, size_t lineNumber) {
 	size_t charNumber;
 	for (charNumber = 0; charNumber < lineSize * 2; ++charNumber) {
@@ -267,7 +323,7 @@ int parseNumberLine(char* line, size_t lineNumber) {
 				displayConstraint(left->conts[i], constraint);
 			}
 		}
-			// C'est un nombre
+		// C'est un nombre
 		else if (line[charNumber] != ' ') {
 			int number;
 			if (sscanf(&line[charNumber], "%d", &number) != 1) {
@@ -294,6 +350,12 @@ int parseNumberLine(char* line, size_t lineNumber) {
 	return 1;
 }
 
+/**
+ * Pars a line which should contain only SUP or INF constraint.
+ * @param line The line to parse
+ * @param lineNumber The number of line.
+ * @return 1 if succeeded, -1 if failed (especially if file malformed)
+ */
 int parseConstraintOnlyLine(char *line, size_t lineNumber) {
 	size_t charNumber;
 	for (charNumber = 0; charNumber < lineSize; ++charNumber) {
@@ -331,6 +393,11 @@ int parseConstraintOnlyLine(char *line, size_t lineNumber) {
 	return 1;
 }
 
+/**
+ * Read a grid file and parse it to modifie variables and constraints. lineSize must be initialized.
+ * @param gridFile The file of the grid.
+ * @return 1 if succeeded, -1 if failed (especially if file malformed)
+ */
 int readAndParseFile(FILE *gridFile) {
 	char * line = NULL;
 	size_t len = 0;
@@ -372,12 +439,19 @@ int readAndParseFile(FILE *gridFile) {
 	return 1;
 }
 
+/**
+ * Free a variable
+ * @param caseToFree The variable to free.
+ */
 void freeCase(CASE * caseToFree) {
 
 	free(caseToFree->domaine);
 	free(caseToFree->conts);
 }
 
+/**
+ * Free the grid and the constraints
+ */
 void freeGridAndConstraints() {
 	if (DEBUG_INIT_CONST)
 		printf("Liberation memoire\n");
@@ -390,6 +464,12 @@ void freeGridAndConstraints() {
 	free(contraintes);
 }
 
+/**
+ * The main
+ * @param argc Number of args
+ * @param argv The args (argv[1] should be the grid file name)
+ * @return 0 if success, -1 if failure
+ */
 int main(int argc, char * argv[]) {
 	if (argc - 1 < 1) {
 		fprintf(stderr, "Error on argument. Usage :\nfutoshiki <GridfileName>\n");

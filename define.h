@@ -7,6 +7,7 @@ extern "C" {
 
 #include <unistd.h>
 
+// Debugs
 #define DEBUG_INIT_CONST 0
 #define DEBUG_FILE_READING 0
 
@@ -15,6 +16,9 @@ extern "C" {
 
 #define ERROR -1
 
+/**
+ * The different binary operator of a constraint
+ */
 enum operateur {
 	DIF, SUP, INF
 };
@@ -23,9 +27,13 @@ typedef struct CASE_ CASE;
 typedef struct AFFECTATION_ AFFECTATION;
 typedef struct CONTRAINTE_ CONTRAINTE;
 
+/**
+ * Equivalent to a variable.
+ */
 struct CASE_ {
-	// Index in grid
+	// Index in grid (number of the slot)
 	size_t ind;
+	// Domain of the variable. All values that it can take
 	int * domaine;
 	// indices de toutes les contraintes de la case dans le tableau contraintes
 	size_t * conts;
@@ -36,15 +44,27 @@ struct CASE_ {
 	AFFECTATION *affectation;
 };
 
+/**
+ * An affectation of a variable
+ */
 struct AFFECTATION_ {
+	// The variable that is affected
 	CASE * var;
+	// The current domain of the slot (we need to not modifie its own)
 	int * curDomain;
+	// The current value affected to the variable
 	int curValue;
 };
 
+/**
+ * A binary constraint between two variables
+ */
 struct CONTRAINTE_ {
+	// The binary operator of the constraint
 	enum operateur op;
+	// The left operand
 	CASE * droite;
+	// The right operand
 	CASE * gauche;
 };
 
