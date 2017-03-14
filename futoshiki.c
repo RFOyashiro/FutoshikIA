@@ -142,8 +142,8 @@ void initBasicConstraints(CASE *grid) {
 				if (numCurrentCase < 4) {
 					size_t o;
 					for (o = 0; o < caseDroite->indLastConst; ++o) {
-						displayConstraint(caseDroite->conts[o], 
-							&(contraintes[caseDroite->conts[o]]));
+						displayConstraint(caseDroite->conts[o],
+								&(contraintes[caseDroite->conts[o]]));
 					}
 				}
 			}
@@ -241,44 +241,44 @@ int parseNumberLine(char* line, size_t lineNumber) {
 		// Si on doit changer une contrainte
 		if (line[charNumber] == '<' || line[charNumber] == '>') {
 			if (charNumber == 0 || charNumber == lineSize * 2) {
-				return failInitGrid(line, 
-					"Constraint without both values detected");
+				return failInitGrid(line,
+						"Constraint without both values detected");
 			}
 			CASE *left = &grid[charNumber / 2 + (lineNumber / 2) * lineSize];
-			
+
 			// Recherche de la premiere contrainte ou left est a gauche
 			// Sachant que ce sera au minium la premiere apres le nombre 
 			// de case a gauche
 			size_t i;
 			CONTRAINTE *constraint;
-			for (i = charNumber / 2; ; ++i) {
+			for (i = charNumber / 2;; ++i) {
 				constraint = &contraintes[left->conts[i]];
 				if (constraint->gauche == left) {
 					break;
 				}
 			}
-			
-			if(line[charNumber] == '<')
+
+			if (line[charNumber] == '<')
 				constraint->op = INF;
-			else 
+			else
 				constraint->op = SUP;
-			
+
 			if (DEBUG_FILE_READING) {
 				displayConstraint(left->conts[i], constraint);
 			}
 		}
-		// C'est un nombre
+			// C'est un nombre
 		else if (line[charNumber] != ' ') {
 			int number;
 			if (sscanf(&line[charNumber], "%d", &number) != 1) {
 				printf("Unknown char detected on a number at line %zu at char : %zu\n", lineNumber, charNumber);
-				return failInitGrid(line, 
-					"Unknown char detected on a number line");
+				return failInitGrid(line,
+						"Unknown char detected on a number line");
 			}
-			
+
 			if (number != 0) {
-				CASE *currentCase = 
-					&grid[charNumber / 2 + (lineNumber / 2) * lineSize];
+				CASE *currentCase =
+						&grid[charNumber / 2 + (lineNumber / 2) * lineSize];
 				size_t i;
 				// On enleve toutes les valeurs du domaine
 				for (i = 0; i < lineSize; ++i) {
@@ -306,25 +306,25 @@ int parseConstraintOnlyLine(char *line, size_t lineNumber) {
 			// nombre de case a droite
 			CONTRAINTE *constraint;
 			size_t i;
-			for (i = (lineSize - 1) - charNumber; ; ++i) {
+			for (i = (lineSize - 1) - charNumber;; ++i) {
 				constraint = &contraintes[left->conts[i]];
 				if (constraint->gauche == left && constraint->droite == right) {
 					break;
 				}
 			}
-			if(line[charNumber] == '^') {
+			if (line[charNumber] == '^') {
 				constraint->op = INF;
 			}
 			else if (line[charNumber] == 'v') {
 				constraint->op = SUP;
 			}
 			else {
-				return failInitGrid(line, 
-					"Unknown char detected on constraint only line");
+				return failInitGrid(line,
+						"Unknown char detected on constraint only line");
 			}
-			
+
 			if (DEBUG_FILE_READING)
-				displayConstraint(left->conts[ (lineSize - 1) - charNumber], 
+				displayConstraint(left->conts[ (lineSize - 1) - charNumber],
 					constraint);
 		}
 	}
@@ -335,7 +335,7 @@ int readAndParseFile(FILE *gridFile) {
 	char * line = NULL;
 	size_t len = 0;
 	ssize_t read;
-	
+
 	int isLineWithNumber = 1;
 	size_t lineNumber;
 	for (lineNumber = 0; lineNumber < lineSize * 2 - 1; ++lineNumber) {
@@ -343,14 +343,14 @@ int readAndParseFile(FILE *gridFile) {
 		if (read <= 0) {
 			return failInitGrid(line, "Grid file malformed");
 		}
-		
+
 		if (DEBUG_FILE_READING)
 			printf("line read :%s", line);
-		
+
 		if (len < lineSize * 2) {
 			return failInitGrid(line, "Line malformed");
 		}
-		
+
 		int res;
 		if (isLineWithNumber) {
 			res = parseNumberLine(line, lineNumber);
@@ -364,9 +364,9 @@ int readAndParseFile(FILE *gridFile) {
 				return res;
 			}
 		}
-		
+
 		isLineWithNumber = 1 - isLineWithNumber;
-	}	
+	}
 	if (line)
 		free(line);
 	return 1;
@@ -407,13 +407,13 @@ int main(int argc, char * argv[]) {
 		fprintf(stderr, "Erreur de creation de la grille\n");
 		exit(EXIT_FAILURE);
 	}
-	
+
 	res = readAndParseFile(gridFile);
 	if (res < 0) {
 		fprintf(stderr, "Erreur de lecture du fichier\n");
 		goto end;
 	}
-	
+
 	printf("backTrack\n");
 	res = backTrack(grid, lineSize, contraintes, nbContraintes);
 	if (res < 0) {
@@ -421,7 +421,7 @@ int main(int argc, char * argv[]) {
 		goto end;
 	}
 
-	end:
+end:
 	// Liberation memoire
 	freeGridAndConstraints();
 	closeFile(gridFile);
