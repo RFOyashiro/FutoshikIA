@@ -146,9 +146,6 @@ int backTrack(CASE *grid, size_t lineSize,
 				curAff->curValue = NO_DOMAINE;
 				memmove(curAff->curDomain, curAff->var->domaine,
 						lineSize * sizeof (int));
-				if (currentVarInd <= 2) {
-					displayAffectation(curAff, lineSize);
-				}
 				currentVarInd -= 2;
 			}
 		}

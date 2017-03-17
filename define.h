@@ -25,6 +25,7 @@ enum operateur {
 
 typedef struct CASE_ CASE;
 typedef struct AFFECTATION_ AFFECTATION;
+typedef struct OLD_DOM_ OLD_DOM;
 typedef struct CONTRAINTE_ CONTRAINTE;
 
 /**
@@ -54,8 +55,16 @@ struct AFFECTATION_ {
 	int * curDomain;
 	// The current value affected to the variable
 	int curValue;
+	
+	int compt;
 };
 
+
+struct OLD_DOM_ {
+	int oldDomainValue;
+	int indice;
+	AFFECTATION * origin;
+};
 /**
  * A binary constraint between two variables
  */

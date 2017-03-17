@@ -1,5 +1,6 @@
 #include "define.h"
 #include "backTrack.h"
+#include "forwardChecking.h"
 
 #include <unistd.h>
 #include <stdio.h>
@@ -494,8 +495,11 @@ int main(int argc, char * argv[]) {
 		goto end;
 	}
 
-	printf("backTrack\n");
-	res = backTrack(grid, lineSize, contraintes, nbContraintes);
+	//printf("backTrack\n");
+	//res = backTrack(grid, lineSize, contraintes, nbContraintes);
+	printf("FC\n");
+	res = forwardChecking(grid, lineSize, contraintes, nbContraintes);
+	
 	if (res < 0) {
 		fprintf(stderr, "Erreur de backtrack\n");
 		goto end;

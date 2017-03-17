@@ -4,12 +4,12 @@ LIBS = -lm
 #ajouter -o3 a la fin
 CCFLAGS = -Wall -ggdb -g3
 
-OBJ = backTrack.o futoshiki.o
+OBJ = backTrack.o forwardChecking.o futoshiki.o
 
 all: futoshiki
 
 futoshiki: futoshiki.c $(OBJ)
-	$(CC) $(CCFLAGS) -o futoshiki.exe $(OBJ)
+	$(CC) $(CCFLAGS) -o futoshiki $(OBJ)
 	
 %.o: %.c
 	$(CC) $(CCFLAGS) -c $<
