@@ -45,6 +45,17 @@ void freeFC(CASE *grid, size_t lineSize) {
 	free(affectations);
 }
 
+void changeDomain(int oldValue, size_t indice, AFFECTATION *origin, AFFECTATION *modifier) {
+	OLD_DOM old;
+	old.oldDomainValue = oldValue;
+	old.indice = indice;
+	old.origin = origin;
+	changedDomain[modifier->var->ind][modifier->compt++] = old;
+	if (DEBUG_FC)
+		printf("removed %d from var %zu\n", oldValue, origin->var->ind);
+	origin->curDomain[indice] = NO_DOMAINE;
+}
+
 int checkConstraintFC(CONTRAINTE *constraint, AFFECTATION * curAff, size_t lineSize) {
 	
 	// Must only modify instancied var
@@ -59,13 +70,9 @@ int checkConstraintFC(CONTRAINTE *constraint, AFFECTATION * curAff, size_t lineS
 				for (i = 0; i < lineSize; i++){
 					if (constraint->droite->affectation->curDomain[i] != NO_DOMAINE && 
 							constraint->droite->affectation->curDomain[i] == curAff->curValue) {
-						OLD_DOM old;
-						old.oldDomainValue = constraint->droite->affectation->curDomain[i];
-						old.indice = i;
-						old.origin = constraint->droite->affectation;
-						changedDomain[curAff->var->ind][curAff->compt++] = old;
-						printf("removed diff %d from var %zu\n", constraint->droite->affectation->curDomain[i], constraint->droite->ind);
-						constraint->droite->affectation->curDomain[i] = NO_DOMAINE;
+						
+						changeDomain(constraint->droite->affectation->curDomain[i], 
+								i, constraint->droite->affectation, curAff);
 						
 						//if (DEBUG_FC)
 							//displayAffectationFC(constraint->droite->affectation, lineSize);
@@ -81,13 +88,9 @@ int checkConstraintFC(CONTRAINTE *constraint, AFFECTATION * curAff, size_t lineS
 				for (i = 0; i < lineSize; i++){
 					if (constraint->gauche->affectation->curDomain[i] != NO_DOMAINE && 
 							constraint->gauche->affectation->curDomain[i] == curAff->curValue) {
-						OLD_DOM old;
-						old.oldDomainValue = constraint->gauche->affectation->curDomain[i];
-						old.indice = i;
-						old.origin = constraint->gauche->affectation;
-						changedDomain[curAff->var->ind][curAff->compt++] = old;
-						printf("removed diff %d from var %zu\n", constraint->gauche->affectation->curDomain[i], constraint->gauche->ind);
-						constraint->gauche->affectation->curDomain[i] = NO_DOMAINE;
+						
+						changeDomain(constraint->gauche->affectation->curDomain[i], 
+								i, constraint->gauche->affectation, curAff);
 					}
 				}
 				
@@ -105,13 +108,9 @@ int checkConstraintFC(CONTRAINTE *constraint, AFFECTATION * curAff, size_t lineS
 				for (i = 0; i < lineSize; i++){
 					if (constraint->droite->affectation->curDomain[i] != NO_DOMAINE &&
 							!(curAff->curValue > constraint->droite->affectation->curDomain[i])) {
-						OLD_DOM old;
-						old.oldDomainValue = constraint->droite->affectation->curDomain[i];
-						old.indice = i;
-						old.origin = constraint->droite->affectation;
-						changedDomain[curAff->var->ind][curAff->compt++] = old;
-						printf("removed sup %d from var %zu\n", constraint->droite->affectation->curDomain[i], constraint->droite->ind);
-						constraint->droite->affectation->curDomain[i] = NO_DOMAINE;			
+						
+						changeDomain(constraint->droite->affectation->curDomain[i], 
+								i, constraint->droite->affectation, curAff);
 					}
 				}
 				
@@ -126,13 +125,9 @@ int checkConstraintFC(CONTRAINTE *constraint, AFFECTATION * curAff, size_t lineS
 				for (i = 0; i < lineSize; i++){
 					if (constraint->gauche->affectation->curDomain[i] != NO_DOMAINE && 
 							!(constraint->gauche->affectation->curDomain[i] > curAff->curValue)) {
-						OLD_DOM old;
-						old.oldDomainValue = constraint->gauche->affectation->curDomain[i];
-						old.indice = i;
-						old.origin = constraint->gauche->affectation;
-						changedDomain[curAff->var->ind][curAff->compt++] = old;
-						printf("removed sup %d from var %zu\n", constraint->gauche->affectation->curDomain[i], constraint->droite->ind);
-						constraint->gauche->affectation->curDomain[i] = NO_DOMAINE;
+						
+						changeDomain(constraint->gauche->affectation->curDomain[i], 
+								i, constraint->gauche->affectation, curAff);
 					}
 				}
 				
@@ -151,13 +146,9 @@ int checkConstraintFC(CONTRAINTE *constraint, AFFECTATION * curAff, size_t lineS
 				for (i = 0; i < lineSize; i++){
 					if (constraint->droite->affectation->curDomain[i] != NO_DOMAINE && 
 							!(curAff->curValue < constraint->droite->affectation->curDomain[i])) {
-						OLD_DOM old;
-						old.oldDomainValue = constraint->droite->affectation->curDomain[i];
-						old.indice = i;
-						old.origin = constraint->droite->affectation;
-						changedDomain[curAff->var->ind][curAff->compt++] = old;
-						printf("removed inf %d from var %zu\n", constraint->droite->affectation->curDomain[i], constraint->droite->ind);
-						constraint->droite->affectation->curDomain[i] = NO_DOMAINE;
+						
+						changeDomain(constraint->droite->affectation->curDomain[i], 
+								i, constraint->droite->affectation, curAff);
 					}
 				}
 				
@@ -170,13 +161,9 @@ int checkConstraintFC(CONTRAINTE *constraint, AFFECTATION * curAff, size_t lineS
 				for (i = 0; i < lineSize; i++){
 					if (constraint->gauche->affectation->curDomain[i] != NO_DOMAINE && 
 							!(constraint->gauche->affectation->curDomain[i] < curAff->curValue)) {
-						OLD_DOM old;
-						old.oldDomainValue = constraint->gauche->affectation->curDomain[i];
-						old.indice = i;
-						old.origin = constraint->gauche->affectation;
-						changedDomain[curAff->var->ind][curAff->compt++] = old;
-						printf("removed inf %d from var %zu\n", constraint->gauche->affectation->curDomain[i], constraint->droite->ind);
-						constraint->gauche->affectation->curDomain[i] = NO_DOMAINE;
+						
+						changeDomain(constraint->gauche->affectation->curDomain[i], 
+								i, constraint->gauche->affectation, curAff);
 					}
 				}
 				
@@ -222,6 +209,7 @@ int forwardChecking(CASE *grid, size_t lineSize,
 		curAff->var = curCase;
 		curAff->curDomain = malloc(lineSize * sizeof (int));
 		memmove(curAff->curDomain, curCase->domaine, lineSize * sizeof (int));
+		curAff->previousDomain = malloc(lineSize * sizeof(int));
 		curAff->curValue = NO_DOMAINE;
 		curAff->compt = 0;
 		curCase->affectation = curAff;
@@ -245,9 +233,6 @@ int forwardChecking(CASE *grid, size_t lineSize,
 
 		// Affectation
 		int j;
-		// We save the current domain
-		int *previousDomain = malloc(lineSize * sizeof (int));
-		memmove(previousDomain, curAff->curDomain, lineSize * sizeof (int));
 		consistant = 0;
 		
 		if (DEBUG_FC)
@@ -274,21 +259,29 @@ int forwardChecking(CASE *grid, size_t lineSize,
 
 				// If we found a concistant affectation
 				if (consistant) {
+					
+					// If we go deeper, we need to save the next var domain
+					// So when it goes up, it can undo the current affectation tested
+					if (currentVarInd + 1 < lineSize* lineSize) {
+						curAff = &affectations[currentVarInd + 1];
+						// We save the current domain
+						memmove(curAff->previousDomain, curAff->curDomain, lineSize * sizeof (int));
+					}
+					
 					printf("consistant pour %zu avec la valeur %d\n", currentVarInd, curAff->curValue);
 					break;
 				}
 				else {
 					// If the affectation wasn't concistant, we rollback what we did
 					rewriteDomain(curAff, lineSize);
-					memmove(curAff->curDomain, previousDomain, lineSize * sizeof (int));
-					printf("failed : \n");
+					printf("failed for %d: \n", curAff->curValue);
 					displayAffectationFC(curAff, lineSize);
 				}
 			}
 
 		}
 		
-		free(previousDomain);
+		//free(previousDomain);
 		
 		// if we didn't found a concistant affectation
 		if (!consistant) {
@@ -305,9 +298,17 @@ int forwardChecking(CASE *grid, size_t lineSize,
 				}
 				
 				curAff->curValue = NO_DOMAINE;
-				//memmove(curAff->curDomain, curAff->var->domaine, lineSize * sizeof (int));
+				
+				// When we go up, we need to undo the values that we just have tested without changing what
+				// other affectation have made
+				memmove(curAff->curDomain, curAff->previousDomain, lineSize * sizeof (int));
+				
+				// We also need to rewrite things that have been to change by previous var before 
+				// taking another value
 				curAff = &affectations[currentVarInd - 1];
 				rewriteDomain(curAff, lineSize);
+				
+				// Going up
 				currentVarInd -= 2;
 				if (DEBUG_FC) {
 					printf("now backing to %zu\n", currentVarInd + 1);

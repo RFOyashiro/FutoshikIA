@@ -56,7 +56,10 @@ struct AFFECTATION_ {
 	// The current value affected to the variable
 	int curValue;
 	
+	// Number of domain changed (used for forward checking)
 	int compt;
+	// Domain before testing values (used for forward checking)
+	int *previousDomain;
 };
 
 
