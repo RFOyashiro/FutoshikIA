@@ -41,6 +41,7 @@ void freeFC(CASE *grid, size_t lineSize) {
 		(&grid[i])->affectation = NULL;
 		AFFECTATION *curAff = &affectations[i];
 		free(curAff->curDomain);
+		free(curAff->previousDomain);
 	}
 	free(affectations);
 }
