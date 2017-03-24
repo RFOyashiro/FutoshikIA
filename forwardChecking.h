@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define DEBUG_FC 1
+#define DEBUG_FC 0
 
 int forwardChecking(CASE *grid, size_t lineSize, 
 	CONTRAINTE *contraintes, size_t nbContraintes);

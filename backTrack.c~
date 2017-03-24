@@ -125,9 +125,11 @@ int backTrack(CASE *grid, size_t lineSize,
 
 				}
 
-				if (consistant) {
-					printf("consistant pour %zu avec la valeur %d\n", currentVarInd, curAff->curValue);
-				}
+				if(DEBUG_BACKTRACK)
+					if (consistant) {
+					
+						printf("consistant pour %zu avec la valeur %d\n", currentVarInd, curAff->curValue);
+					}
 			}
 
 		}
@@ -135,7 +137,8 @@ int backTrack(CASE *grid, size_t lineSize,
 		if (!consistant) {
 			// If we backtracked to root and still not consistant then we failed
 			if (currentVarInd == 0) {
-				printf("failure\n");
+				if(DEBUG_BACKTRACK)
+					printf("failure\n");
 				success = 0;
 				break;
 			}
@@ -146,27 +149,22 @@ int backTrack(CASE *grid, size_t lineSize,
 				curAff->curValue = NO_DOMAINE;
 				memmove(curAff->curDomain, curAff->var->domaine,
 						lineSize * sizeof (int));
-				if (currentVarInd <= 2) {
-					displayAffectation(curAff, lineSize);
-				}
 				currentVarInd -= 2;
 			}
 		}
 
 	}
 
-	if (DEBUG_BACKTRACK) {
-		if (success) {
-			printf("Solution is :\n");
-			for (i = 0; i < lineSize * lineSize; ++i) {
-	
-				AFFECTATION * curAff = &affectations[i];
-				displayAffectation(curAff, lineSize);
-			}
+	if (success) {
+		printf("Solution is :\n");
+		for (i = 0; i < lineSize * lineSize; ++i) {
+
+			AFFECTATION * curAff = &affectations[i];
+			displayAffectation(curAff, lineSize);
 		}
-		else {
-			printf("Failure : no solution\n");
-		}
+	}
+	else {
+		printf("Failure : no solution\n");
 	}
 
 	freeBackTrack(grid, lineSize);

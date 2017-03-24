@@ -125,18 +125,10 @@ drmemory.exe -- C:\Users\Thomas\Documents\NetBeansProjects\FutoshikIA/futoshiki.
 heuristique : 
 - case
 	* commencer par les cases déjà définie
-	* puis par les cases ayant le plus petit domaine
 	* puis par les cases ayant des contraintes autres que !=
-	
 - domaine
 	* commencer par les valeurs les moins utilisées
 	
-	
-choix de case : case fixe -> case taille domaine -> case containte <> -> case contrainte !=
-choix de valeur : frequence des valeurs
-	
-	
-
 dom/deg => TD
 
 

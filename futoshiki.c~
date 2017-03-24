@@ -1,10 +1,14 @@
 #include "define.h"
 #include "backTrack.h"
 #include "forwardChecking.h"
+#include "timer.h"
 
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+
+clock_t begin, end;
 
 // Total number of constraint
 size_t nbContraintes = 0;
@@ -494,12 +498,26 @@ int main(int argc, char * argv[]) {
 		fprintf(stderr, "Erreur de lecture du fichier\n");
 		goto end;
 	}
+	
+	int Result[3];
 
-	//printf("backTrack\n");
-	//res = backTrack(grid, lineSize, contraintes, nbContraintes);
+	begin = clock();
+	
 	printf("FC\n");
 	res = forwardChecking(grid, lineSize, contraintes, nbContraintes);
 	
+	end = clock();
+	getTimeElapsed(begin, end, Result);
+	printf("time : %02d:%02d.%03d ms\n\n", Result[0], Result[1], Result[2]);
+	begin = clock();
+	
+	printf("backTrack\n");
+	res = backTrack(grid, lineSize, contraintes, nbContraintes);	
+	
+	end = clock();
+	
+	getTimeElapsed(begin, end, Result);
+	printf("time : %02d:%02d.%03d ms\n\n", Result[0], Result[1], Result[2]);
 	if (res < 0) {
 		fprintf(stderr, "Erreur de backtrack\n");
 		goto end;

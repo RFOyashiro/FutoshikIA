@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define DEBUG_BACKTRACK 0
+#define DEBUG_BACKTRACK 1
 
 /**
  * Apply backtrack technic to try to solve the futushiki grid

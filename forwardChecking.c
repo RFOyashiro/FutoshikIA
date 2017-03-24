@@ -74,9 +74,6 @@ int checkConstraintFC(CONTRAINTE *constraint, AFFECTATION * curAff, size_t lineS
 						
 						changeDomain(constraint->droite->affectation->curDomain[i], 
 								i, constraint->droite->affectation, curAff);
-						
-						//if (DEBUG_FC)
-							//displayAffectationFC(constraint->droite->affectation, lineSize);
 					}
 				}
 				
@@ -115,7 +112,6 @@ int checkConstraintFC(CONTRAINTE *constraint, AFFECTATION * curAff, size_t lineS
 					}
 				}
 				
-				displayAffectationFC(constraint->droite->affectation, lineSize);
 				
 				for (i = 0; i < lineSize; i++){
 					if (constraint->droite->affectation->curDomain[i] != NO_DOMAINE) return 1;
@@ -266,17 +262,23 @@ int forwardChecking(CASE *grid, size_t lineSize,
 					if (currentVarInd + 1 < lineSize* lineSize) {
 						curAff = &affectations[currentVarInd + 1];
 						// We save the current domain
-						memmove(curAff->previousDomain, curAff->curDomain, lineSize * sizeof (int));
+						memmove(curAff->previousDomain, curAff->curDomain, 
+							lineSize * sizeof (int));
 					}
 					
-					printf("consistant pour %zu avec la valeur %d\n", currentVarInd, curAff->curValue);
+					if (DEBUG_FC)
+						printf("consistant pour %zu avec la valeur %d\n", 
+							currentVarInd, curAff->curValue);
+							
 					break;
 				}
 				else {
 					// If the affectation wasn't concistant, we rollback what we did
 					rewriteDomain(curAff, lineSize);
-					printf("failed for %d: \n", curAff->curValue);
-					displayAffectationFC(curAff, lineSize);
+					if (DEBUG_FC) {
+						printf("failed for %d: \n", curAff->curValue);
+						displayAffectationFC(curAff, lineSize);
+					}
 				}
 			}
 
@@ -319,24 +321,22 @@ int forwardChecking(CASE *grid, size_t lineSize,
 
 	}
 
-	if (DEBUG_FC) {
-		if (success) {
-			printf("Solution is :\n");
-			for (i = 0; i < lineSize * lineSize; ++i) {
-	
-				AFFECTATION * curAff = &affectations[i];
-				printf("%d", curAff->curValue);
-				if ((i + 1)  % lineSize == 0)
-					printf("\n");
-				else
-					printf(" ");
-			}
-		}
-		else {
-			printf("Failure : no solution\n");
+	if (success) {
+		printf("Solution is :\n");
+		for (i = 0; i < lineSize * lineSize; ++i) {
+
+			AFFECTATION * curAff = &affectations[i];
+			printf("%d", curAff->curValue);
+			if ((i + 1)  % lineSize == 0)
+				printf("\n");
+			else
+				printf(" ");
 		}
 	}
-
+	else {
+		printf("Failure : no solution\n");
+	}
+		
 	freeFC(grid, lineSize);
 	return success;
 }

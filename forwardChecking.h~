@@ -1,4 +1,4 @@
-#ifdef __FOR_H__
+#ifndef __FOR_H__
 #define __FOR_H__
 
 #include "define.h"
