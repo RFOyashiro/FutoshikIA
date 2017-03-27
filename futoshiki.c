@@ -503,24 +503,30 @@ int main(int argc, char * argv[]) {
 
 	begin = clock();
 	
+	printf("FC\n");
+	res = forwardChecking(grid, lineSize, contraintes, nbContraintes);
+	
+	end = clock();
+	getTimeElapsed(begin, end, Result);
+	printf("time : %02d:%02d:%03d ms\n\n", Result[0], Result[1], Result[2]);
+	
+	if (res < 0) {
+		fprintf(stderr, "Erreur de backtrack\n");
+		goto end;
+	}
+	
+	begin = clock();
+	
+	
 	printf("backTrack\n");
 	res = backTrack(grid, lineSize, contraintes, nbContraintes);	
 	
 	end = clock();
 	getTimeElapsed(begin, end, Result);
-	printf("time : %02d:%02d.%03d ms\n\n", Result[0], Result[1], Result[2]);
-	begin = clock();
+	printf("time : %02d:%02d:%03d ms\n\n", Result[0], Result[1], Result[2]);
 	
-	
-	printf("FC\n");
-	res = forwardChecking(grid, lineSize, contraintes, nbContraintes);
-	
-	end = clock();
-	
-	getTimeElapsed(begin, end, Result);
-	printf("time : %02d:%02d.%03d ms\n\n", Result[0], Result[1], Result[2]);
 	if (res < 0) {
-		fprintf(stderr, "Erreur de backtrack\n");
+		fprintf(stderr, "Erreur de forwardChecking\n");
 		goto end;
 	}
 

@@ -11,6 +11,8 @@
       <in>forwardChecking.c</in>
       <in>forwardChecking.h</in>
       <in>futoshiki.c</in>
+      <in>timer.c</in>
+      <in>timer.h</in>
     </df>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>

@@ -257,6 +257,10 @@ int forwardChecking(CASE *grid, size_t lineSize,
 				// If we found a concistant affectation
 				if (consistant) {
 					
+					if (currentVarInd == 0) {
+						printf("Var 0 = %d\n", curAff->curValue);
+					}
+					
 					// If we go deeper, we need to save the next var domain
 					// So when it goes up, it can undo the current affectation tested
 					if (currentVarInd + 1 < lineSize* lineSize) {

@@ -124,6 +124,10 @@ int backTrack(CASE *grid, size_t lineSize,
 					}
 
 				}
+				
+				if (currentVarInd == 0) {
+					printf("Var 0 = %d\n", curAff->curValue);
+				}
 
 				if(DEBUG_BACKTRACK)
 					if (consistant) {
