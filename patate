@@ -1,0 +1,23 @@
+int main(int argc, char **argv) {
+
+	int i;
+	for (i = 1; i < argc; i++) {
+		if(strcmp(argv[i], "-l") == 0){
+			analyseLex = 1;
+			continue;
+		}
+		if (strcmp(argv[i], "-s") == 0) {
+			analyseSynt = 1;
+			continue;
+		}
+		if (strcmp(argv[i], "-S") == 0) {
+			analyseSem = 1;
+			continue;
+		}
+		yyin = fopen(argv[i], "r");
+		if (yyin == NULL) {
+			fprintf(stderr, "impossible d'ouvrir le fichier %s\n", argv[i]);
+			return 0;
+		}
+	}
+

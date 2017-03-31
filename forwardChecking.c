@@ -257,17 +257,22 @@ int forwardChecking(CASE *grid, size_t lineSize,
 				// If we found a concistant affectation
 				if (consistant) {
 					
-					if (currentVarInd == 0) {
-						printf("Var 0 = %d\n", curAff->curValue);
+					if (currentVarInd < 10 || currentVarInd > 67) {
+						//printf("Var %zu = %d\n", currentVarInd, curAff->curValue);
 					}
+					
+					
 					
 					// If we go deeper, we need to save the next var domain
 					// So when it goes up, it can undo the current affectation tested
 					if (currentVarInd + 1 < lineSize* lineSize) {
 						curAff = &affectations[currentVarInd + 1];
+						
 						// We save the current domain
 						memmove(curAff->previousDomain, curAff->curDomain, 
 							lineSize * sizeof (int));
+							
+						curAff = &affectations[currentVarInd];
 					}
 					
 					if (DEBUG_FC)

@@ -1,7 +1,7 @@
 CC = gcc
 
 LIBS = -lm 
-#ajouter -o3 a la fin
+#ajouter -O3 a la fin
 CCFLAGS = -Wall -ggdb -g3 -O3
 
 OBJ = backTrack.o forwardChecking.o timer.o futoshiki.o
