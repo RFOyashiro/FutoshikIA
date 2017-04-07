@@ -2,9 +2,7 @@
 <configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="0">
-      <df name="grilles">
-        <in>grille1_3x3.fut</in>
-      </df>
+      <in>backTrack.c</in>
       <in>futoshiki.c</in>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -29,6 +27,7 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-ggdb"/>
+        <element flagsID="1" commonFlags="-ggdb -O3"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -49,11 +48,13 @@
           <preBuildCommand></preBuildCommand>
         </preBuild>
       </makefileType>
-      <item path="futoshiki.c" ex="false" tool="0" flavor2="0">
-        <cTool flags="0">
+      <item path="backTrack.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="1">
         </cTool>
       </item>
-      <item path="grilles/grille1_3x3.fut" ex="false" tool="3" flavor2="0">
+      <item path="futoshiki.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="0">
+        </cTool>
       </item>
     </conf>
   </confs>

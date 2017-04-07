@@ -1,6 +1,7 @@
 #include "define.h"
 #include "backTrack.h"
 #include "forwardChecking.h"
+#include "fcHeuristic.h"
 #include "timer.h"
 
 #include <unistd.h>
@@ -469,6 +470,10 @@ void freeGridAndConstraints() {
 	free(contraintes);
 }
 
+int doBackTrack = 0;
+int doForwardChecking = 0;
+int doFcHeurisitques = 0;
+
 /**
  * The main
  * @param argc Number of args
@@ -476,17 +481,35 @@ void freeGridAndConstraints() {
  * @return 0 if success, -1 if failure
  */
 int main(int argc, char * argv[]) {
-	if (argc - 1 < 1) {
-		fprintf(stderr, "Error on argument. Usage :\nfutoshiki <GridfileName>\n");
+	if (argc - 1 < 2) {
+		fprintf(stderr, "Error on argument. Usage :\nfutoshiki algoChoices <GridfileName>\n");
+		fprintf(stderr, "Algo choices are:\n-b for backtrack\n-f for forward checking\n-fh for forward checking with heuristics");
 		exit(EXIT_FAILURE);
 	}
-
-	FILE *gridFile = openFile(argv[1]);
-	if (gridFile == NULL) {
-		fprintf(stderr, "Impossible d'ouvrir le fichier\n");
-		exit(EXIT_FAILURE);
+	
+	FILE *gridFile = NULL;
+	
+	int i;
+	for (i = 1; i < argc; i++) {
+		if(strcmp(argv[i], "-b") == 0){
+			doBackTrack = 1;
+			continue;
+		}
+		if (strcmp(argv[i], "-f") == 0) {
+			doForwardChecking = 1;
+			continue;
+		}
+		if (strcmp(argv[i], "-fh") == 0) {
+			doFcHeurisitques = 1;
+			continue;
+		}
+		gridFile = openFile(argv[i]);
+		if (gridFile == NULL) {
+			fprintf(stderr, "Impossible d'ouvrir le fichier %s\n", argv[i]);
+			exit(EXIT_FAILURE);
+		}
 	}
-
+	
 	int res = initGrid(gridFile);
 	if (res < 0) {
 		fprintf(stderr, "Erreur de creation de la grille\n");
@@ -501,33 +524,47 @@ int main(int argc, char * argv[]) {
 	
 	int Result[3];
 
-	begin = clock();
-	
-	printf("FC\n");
-	res = forwardChecking(grid, lineSize, contraintes, nbContraintes);
-	
-	end = clock();
-	getTimeElapsed(begin, end, Result);
-	printf("time : %02d:%02d:%03d ms\n\n", Result[0], Result[1], Result[2]);
-	
-	if (res < 0) {
-		fprintf(stderr, "Erreur de backtrack\n");
-		goto end;
+	if (doFcHeurisitques) {
+		begin = clock();
+
+		printf("FC with heuristics\n");
+		res = fcHeuritic(grid, lineSize, contraintes, nbContraintes);
+
+		end = clock();
+		getTimeElapsed(begin, end, Result);
+		printf("time : %02d:%02d:%03d ms\n\n", Result[0], Result[1], Result[2]);
+
+		if (res < 0) {
+			fprintf(stderr, "Erreur on fc with heuristics\n");	
+		}
 	}
-	
-	begin = clock();
-	
-	
-	printf("backTrack\n");
-	res = backTrack(grid, lineSize, contraintes, nbContraintes);	
-	
-	end = clock();
-	getTimeElapsed(begin, end, Result);
-	printf("time : %02d:%02d:%03d ms\n\n", Result[0], Result[1], Result[2]);
-	
-	if (res < 0) {
-		fprintf(stderr, "Erreur de forwardChecking\n");
-		goto end;
+	if (doForwardChecking) {
+		begin = clock();
+
+		printf("FC\n");
+		res = forwardChecking(grid, lineSize, contraintes, nbContraintes);
+
+		end = clock();
+		getTimeElapsed(begin, end, Result);
+		printf("time : %02d:%02d:%03d ms\n\n", Result[0], Result[1], Result[2]);
+
+		if (res < 0) {
+			fprintf(stderr, "Erreur de forwardChecking\n");	
+		}
+	}
+	if (doBackTrack) {
+		begin = clock();
+
+		printf("backTrack\n");
+		res = backTrack(grid, lineSize, contraintes, nbContraintes);	
+
+		end = clock();
+		getTimeElapsed(begin, end, Result);
+		printf("time : %02d:%02d:%03d ms\n\n", Result[0], Result[1], Result[2]);
+
+		if (res < 0) {
+			fprintf(stderr, "Erreur de backtrack\n");
+		}
 	}
 
 end:
