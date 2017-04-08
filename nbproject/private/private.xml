@@ -8,6 +8,13 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/C:/Users/Thomas/Documents/NetBeansProjects/FutoshikIA/futoshiki.c</file>
+            <file>file:/C:/Users/Thomas/Documents/NetBeansProjects/FutoshikIA/Makefile</file>
+            <file>file:/C:/Users/Thomas/Documents/NetBeansProjects/FutoshikIA/fcHeuristic.h</file>
+            <file>file:/C:/Users/Thomas/Documents/NetBeansProjects/FutoshikIA/Contrainte.txt</file>
+            <file>file:/C:/Users/Thomas/Documents/NetBeansProjects/FutoshikIA/define.h</file>
+            <file>file:/C:/Users/Thomas/Documents/NetBeansProjects/FutoshikIA/fcHeuristic.c</file>
+            <file>file:/C:/Users/Thomas/Documents/NetBeansProjects/FutoshikIA/grille0_9x9.fut</file>
+            <file>file:/C:/Users/Thomas/Documents/NetBeansProjects/FutoshikIA/grilles/grille1_3x3.fut</file>
         </group>
     </open-files>
 </project-private>

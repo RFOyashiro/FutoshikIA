@@ -10,9 +10,6 @@ OLD_DOM **changedDomainFCH;
 size_t affectedVarInd = 0;
 AFFECTATION **affectedVar;
 
-size_t oneValueVarInd = 0;
-AFFECTATION **oneValueVar;
-
 /**
  * Display an affectation for debug purpose
  * @param affect The affectationsFCH
@@ -63,6 +60,7 @@ void changeDomainFCH(int oldValue, size_t indice, AFFECTATION *origin, AFFECTATI
 	if (DEBUG_FCH)
 		printf("removed %d from var %zu\n", oldValue, origin->var->ind);
 	origin->curDomain[indice] = NO_DOMAINE;
+	origin->curDomainSize--;
 }
 
 int checkConstraintFCH(CONTRAINTE *constraint, AFFECTATION * curAff, size_t lineSize) {
@@ -85,10 +83,10 @@ int checkConstraintFCH(CONTRAINTE *constraint, AFFECTATION * curAff, size_t line
 					}
 				}
 
-				for (i = 0; i < lineSize; i++) {
-					if (constraint->droite->affectation->curDomain[i] != NO_DOMAINE) return 1;
-				}
-				return 0;
+				if (constraint->droite->affectation->curDomainSize > 0) 
+					return 1;
+				else 
+					return 0;
 			}
 			else {
 				for (i = 0; i < lineSize; i++) {
@@ -100,10 +98,10 @@ int checkConstraintFCH(CONTRAINTE *constraint, AFFECTATION * curAff, size_t line
 					}
 				}
 
-				for (i = 0; i < lineSize; i++) {
-					if (constraint->gauche->affectation->curDomain[i] != NO_DOMAINE) return 1;
-				}
-				return 0;
+				if (constraint->gauche->affectation->curDomainSize > 0) 
+					return 1;
+				else 
+					return 0;
 			}
 			break;
 
@@ -121,10 +119,10 @@ int checkConstraintFCH(CONTRAINTE *constraint, AFFECTATION * curAff, size_t line
 				}
 
 
-				for (i = 0; i < lineSize; i++) {
-					if (constraint->droite->affectation->curDomain[i] != NO_DOMAINE) return 1;
-				}
-				return 0;
+				if (constraint->droite->affectation->curDomainSize > 0) 
+					return 1;
+				else 
+					return 0;
 			}
 			else {
 				for (i = 0; i < lineSize; i++) {
@@ -136,10 +134,10 @@ int checkConstraintFCH(CONTRAINTE *constraint, AFFECTATION * curAff, size_t line
 					}
 				}
 
-				for (i = 0; i < lineSize; i++) {
-					if (constraint->gauche->affectation->curDomain[i] != NO_DOMAINE) return 1;
-				}
-				return 0;
+				if (constraint->gauche->affectation->curDomainSize > 0) 
+					return 1;
+				else 
+					return 0;
 			}
 			break;
 
@@ -157,10 +155,10 @@ int checkConstraintFCH(CONTRAINTE *constraint, AFFECTATION * curAff, size_t line
 					}
 				}
 
-				for (i = 0; i < lineSize; i++) {
-					if (constraint->droite->affectation->curDomain[i] != NO_DOMAINE) return 1;
-				}
-				return 0;
+				if (constraint->droite->affectation->curDomainSize > 0) 
+					return 1;
+				else 
+					return 0;
 			}
 			else {
 				for (i = 0; i < lineSize; i++) {
@@ -172,10 +170,10 @@ int checkConstraintFCH(CONTRAINTE *constraint, AFFECTATION * curAff, size_t line
 					}
 				}
 
-				for (i = 0; i < lineSize; i++) {
-					if (constraint->gauche->affectation->curDomain[i] != NO_DOMAINE) return 1;
-				}
-				return 0;
+				if (constraint->gauche->affectation->curDomainSize > 0) 
+					return 1;
+				else 
+					return 0;
 			}
 			break;
 		default:
@@ -191,6 +189,7 @@ void rewriteDomainFCH(AFFECTATION * curAff, size_t lineSize) {
 	for (i = 0; i < curAff->compt; i++) {
 		OLD_DOM *old = &changedDomainFCH[curAff->var->ind][i];
 		old->origin->curDomain[old->indice] = old->oldDomainValue;
+		old->origin->curDomainSize++;
 		if (DEBUG_FCH)
 			printf("adding %d to var %zu\n", old->oldDomainValue, old->origin->var->ind);
 	}
@@ -203,16 +202,7 @@ AFFECTATION *chooseNextVar(CASE *grid, size_t lineSize,
 	AFFECTATION *curAff = NULL;
 	size_t i;
 
-	if (oneValueVarInd > 0) {
-		// Test if there is a non affected var with value constraint
-		for (i = 0; i < oneValueVarInd - 1; ++i) {
-			if (oneValueVar[i]->curValue == NO_DOMAINE) {
-				curAff = oneValueVar[i];
-				return curAff;
-			}
-		}
-	}
-
+	// Choose next var which is the one with the tinyest domain size
 	for (i = 0; i < lineSize * lineSize; ++i) {
 		if ((&affectationsFCH[i])->curValue == NO_DOMAINE) {
 			curAff = &affectationsFCH[i];
@@ -234,7 +224,6 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 	affectationsFCH = malloc(lineSize * lineSize * sizeof (AFFECTATION));
 	changedDomainFCH = malloc(lineSize * lineSize * sizeof (OLD_DOM*));
 	affectedVar = malloc(lineSize * lineSize * sizeof (AFFECTATION*));
-	oneValueVar = malloc(lineSize * lineSize * sizeof (AFFECTATION*));
 
 	for (i = 0; i < lineSize * lineSize; ++i) {
 		AFFECTATION * curAff = &affectationsFCH[i];
@@ -242,18 +231,21 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 		curAff->var = curCase;
 		curAff->curDomain = malloc(lineSize * sizeof (int));
 		memmove(curAff->curDomain, curCase->domaine, lineSize * sizeof (int));
+		
+		// If there is a domain constraint
+		if(curAff->curDomain[0] == NO_DOMAINE || (lineSize > 1 && curAff->curDomain[1] == NO_DOMAINE)) {
+			curAff->curDomainSize = 1;
+		}
+		else {
+			curAff->curDomainSize = lineSize;
+		}
+		
 		curAff->previousDomain = malloc(lineSize * sizeof (int));
 		curAff->curValue = NO_DOMAINE;
 		curAff->compt = 0;
 		curCase->affectation = curAff;
 
 		changedDomainFCH[i] = malloc(curAff->var->indLastConst * lineSize * sizeof (OLD_DOM));
-
-		// If this var has a value constraint
-		if (curAff->curDomain[0] == NO_DOMAINE) {
-			oneValueVar[oneValueVarInd] = curAff;
-			oneValueVarInd++;
-		}
 	}
 
 	if (DEBUG_FCH)
@@ -264,6 +256,7 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 	int consistant = 1;
 	AFFECTATION *curAff = chooseNextVar(grid, lineSize, contraintes, nbContraintes);
 	affectedVar[affectedVarInd++] = curAff;
+	size_t k;
 	while (curAff != NULL) {
 
 		if (DEBUG_FCH) {
@@ -283,9 +276,9 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 
 				curAff->curValue = curAff->curDomain[j];
 				curAff->curDomain[j] = NO_DOMAINE;
+				curAff->curDomainSize--;
 
 				// Check constraint
-				size_t k;
 				consistant = 1;
 
 				for (k = 0; k < curAff->var->indLastConst && consistant; ++k) {
@@ -315,6 +308,8 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 					if (DEBUG_FCH)
 						printf("consistant pour %zu avec la valeur %d\n",
 							curAff->var->ind, curAff->curValue);
+					
+					quickSortMain (affectationsFCH, lineSize);
 
 					break;
 				}
@@ -352,6 +347,13 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 				// When we go up, we need to undo the values that we just have tested without changing what
 				// other affectation have made
 				memmove(curAff->curDomain, curAff->previousDomain, lineSize * sizeof (int));
+				// Recalculate the valid domain size
+				curAff->curDomainSize = 0;
+				for(k = 0; k < lineSize; ++k) {
+					if(curAff->curDomain[k] != NO_DOMAINE) {
+						curAff->curDomainSize++;
+					}
+				}
 
 				// We also need to rewrite things that have been to change by previous var before 
 				// taking another value

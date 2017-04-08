@@ -4,7 +4,7 @@ LIBS = -lm
 #ajouter -O3 a la fin
 CCFLAGS = -Wall -ggdb -g3
 
-OBJ = fcHeuristic.o backTrack.o forwardChecking.o timer.o futoshiki.o
+OBJ = fcHeuristic.o backTrack.o forwardChecking.o timer.o futoshiki.o quickSort.o
 
 all: futoshiki
 

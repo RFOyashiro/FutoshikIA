@@ -2,6 +2,7 @@
 #define __FCH_H__
 
 #include "define.h"
+#include "quickSort.h"
 
 #include <string.h>
 #include <stdio.h>

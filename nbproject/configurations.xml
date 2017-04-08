@@ -4,6 +4,8 @@
     <df root="." name="0">
       <in>backTrack.c</in>
       <in>futoshiki.c</in>
+      <in>quickSort.c</in>
+      <in>quickSort.h</in>
     </df>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -55,6 +57,10 @@
       <item path="futoshiki.c" ex="false" tool="0" flavor2="2">
         <cTool flags="0">
         </cTool>
+      </item>
+      <item path="quickSort.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="quickSort.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

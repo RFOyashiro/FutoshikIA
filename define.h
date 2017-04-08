@@ -51,7 +51,9 @@ struct CASE_ {
 struct AFFECTATION_ {
 	// The variable that is affected
 	CASE * var;
-	// The current domain of the slot (we need to not modifie its own)
+	// number of valid values that this affectation can take
+	size_t curDomainSize;
+	// The current domain of the slot (we need to not modify the CASE one)
 	int * curDomain;
 	// The current value affected to the variable
 	int curValue;
