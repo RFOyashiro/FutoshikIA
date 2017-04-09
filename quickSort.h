@@ -12,12 +12,12 @@ extern "C" {
 #include "define.h"
 	
 /**
- * \fn void quickSortMain (AFFECTATION *tab[], const size_t tabSize)
+ * \fn void quickSortMain (AFFECTATION **tab[], const size_t tabSize)
  * \brief Sort an AFFECTATION array by domain size
  * \param[in, out] tab The array to sort. All tabSize values must be initialized.
  * \param[in] tabSize the size of tab.
  */
-void quickSortMain (AFFECTATION *tab, const size_t tabSize);
+void quickSortMain (AFFECTATION **tab, const size_t tabSize);
 
 #ifdef __cplusplus
 }

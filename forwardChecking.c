@@ -191,6 +191,43 @@ void rewriteDomain(AFFECTATION * curAff, size_t lineSize) {
 	curAff->compt = 0;
 }
 
+/*
+ * The heuristic is just to choose the least use value
+ */
+int chooseNextValueFC(AFFECTATION *curAff, size_t lineSize, CONTRAINTE *contraintes) {
+
+	int consistant = 0;
+	size_t j, k;
+	CONTRAINTE *curConst;
+	for (j = 0; j < lineSize && !consistant; ++j) {
+
+		consistant = 0;
+		if (curAff->curDomain[j] != NO_DOMAINE) {
+
+			curAff->curValue = curAff->curDomain[j];
+			curAff->curDomain[j] = NO_DOMAINE;
+			curAff->curDomainSize--;
+
+			// Check constraint
+			consistant = 1;
+			for (k = 0; k < curAff->var->indLastConst && consistant; ++k) {
+				curConst = &contraintes[curAff->var->conts[k]];
+
+				if (!checkConstraintFC(curConst, curAff, lineSize)) {
+					consistant = 0;
+					// If the affectation wasn't concistant, we rollback what we did
+					rewriteDomain(curAff, lineSize);
+					if (DEBUG_FC) {
+						printf("failed for %d: \n", curAff->curValue);
+						displayAffectationFC(curAff, lineSize);
+					}
+				}
+			}
+		}
+	}
+	return consistant;
+}
+
 int forwardChecking(CASE *grid, size_t lineSize,
 		CONTRAINTE *contraintes, size_t nbContraintes) {
 
@@ -240,72 +277,29 @@ int forwardChecking(CASE *grid, size_t lineSize,
 			printf("var : %zu\n", currentVarInd);
 
 		// Affectation
-		int j;
 		consistant = 0;
 		
 		if (DEBUG_FC)
 			displayAffectationFC(curAff, lineSize);
-		for (j = 0; j < lineSize; ++j) {
+		
+		consistant = chooseNextValueFC(curAff, lineSize, contraintes);
+		if (consistant) {
+			// If we go deeper, we need to save the next var domain
+			// So when it goes up, it can undo the current affectation tested
+			if (currentVarInd + 1 < lineSize* lineSize) {
+				curAff = &affectations[currentVarInd + 1];
 
-			if (curAff->curDomain[j] != NO_DOMAINE) {
+				// We save the current domain
+				memmove(curAff->previousDomain, curAff->curDomain, 
+					lineSize * sizeof (int));
 
-				curAff->curValue = curAff->curDomain[j];
-				curAff->curDomain[j] = NO_DOMAINE;
-				curAff->curDomainSize--;
-
-				// Check constraint
-				consistant = 1;
-				
-				for (k = 0; k < curAff->var->indLastConst && consistant; ++k) {
-					CONTRAINTE *curConst = &contraintes[curAff->var->conts[k]];
-					
-					if (!checkConstraintFC(curConst, curAff, lineSize)) {
-						consistant = 0;
-					}
-
-				}
-
-				// If we found a concistant affectation
-				if (consistant) {
-					
-					if (currentVarInd < 10 || currentVarInd > 67) {
-						//printf("Var %zu = %d\n", currentVarInd, curAff->curValue);
-					}
-					
-					
-					
-					// If we go deeper, we need to save the next var domain
-					// So when it goes up, it can undo the current affectation tested
-					if (currentVarInd + 1 < lineSize* lineSize) {
-						curAff = &affectations[currentVarInd + 1];
-						
-						// We save the current domain
-						memmove(curAff->previousDomain, curAff->curDomain, 
-							lineSize * sizeof (int));
-							
-						curAff = &affectations[currentVarInd];
-					}
-					
-					if (DEBUG_FC)
-						printf("consistant pour %zu avec la valeur %d\n", 
-							currentVarInd, curAff->curValue);
-							
-					break;
-				}
-				else {
-					// If the affectation wasn't concistant, we rollback what we did
-					rewriteDomain(curAff, lineSize);
-					if (DEBUG_FC) {
-						printf("failed for %d: \n", curAff->curValue);
-						displayAffectationFC(curAff, lineSize);
-					}
-				}
+				curAff = &affectations[currentVarInd];
 			}
 
-		}
-		
-		//free(previousDomain);
-		
+			if (DEBUG_FC)
+				printf("consistant pour %zu avec la valeur %d\n",
+					curAff->var->ind, curAff->curValue);
+		}				
 		// if we didn't found a concistant affectation
 		if (!consistant) {
 			// If we backtracked to root and still not consistant then we failed
