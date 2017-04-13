@@ -5,6 +5,9 @@
  */
 AFFECTATION *affectations;
 
+int nbNodesBT = 1;
+int nbConstraintTestedBT = 0;
+
 /**
  * Free backtrack affectations
  */
@@ -119,16 +122,20 @@ int backTrack(CASE *grid, size_t lineSize,
 				for (k = 0; k < curAff->var->indLastConst && consistant; ++k) {
 					CONTRAINTE *curConst = &contraintes[curAff->var->conts[k]];
 					
+					nbConstraintTestedBT++;
+					
 					if (!checkConstraint(curConst)) {
 						consistant = 0;
 					}
-
 				}
-				if(DEBUG_BACKTRACK)
-					if (consistant) {
+				
+				if (consistant) {
 					
+					nbNodesBT++;
+					if (DEBUG_BACKTRACK) {
 						printf("consistant pour %zu avec la valeur %d\n", currentVarInd, curAff->curValue);
 					}
+				}
 			}
 
 		}
@@ -155,7 +162,7 @@ int backTrack(CASE *grid, size_t lineSize,
 	}
 
 	if (success) {
-		printf("Solution is :\n");
+		printf("One possible solution is :\n");
 		for (i = 0; i < lineSize * lineSize; ++i) {
 
 			AFFECTATION * curAff = &affectations[i];
@@ -169,6 +176,9 @@ int backTrack(CASE *grid, size_t lineSize,
 	else {
 		printf("Failure : no solution\n");
 	}
+	
+	printf("Node in the corresponding tree : %d\n", nbNodesBT);
+	printf("Number of constraint test : %d\n", nbConstraintTestedBT);
 
 	freeBackTrack(grid, lineSize);
 	return success;

@@ -506,6 +506,8 @@ int main(int argc, char * argv[]) {
 		gridFile = openFile(argv[i]);
 		if (gridFile == NULL) {
 			fprintf(stderr, "Impossible d'ouvrir le fichier %s\n", argv[i]);
+			fprintf(stderr, "Error on argument. Usage :\nfutoshiki algoChoices <GridfileName>\n");
+			fprintf(stderr, "Algo choices are:\n-b for backtrack\n-f for forward checking\n-fh for forward checking with heuristics");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -525,9 +527,11 @@ int main(int argc, char * argv[]) {
 	int Result[3];
 
 	if (doFcHeurisitques) {
+		
+		printf("=========Forward checking with heuristics finished=========\n");
 		begin = clock();
 
-		printf("FC with heuristics\n");
+		printf("Forward checking with heuristics\n");
 		res = fcHeuritic(grid, lineSize, contraintes, nbContraintes);
 
 		end = clock();
@@ -537,11 +541,15 @@ int main(int argc, char * argv[]) {
 		if (res < 0) {
 			fprintf(stderr, "Erreur on fc with heuristics\n");	
 		}
+		
+		printf("==========================================================\n");
 	}
 	if (doForwardChecking) {
+		
+		printf("=========Forward checking finished=========\n");
 		begin = clock();
 
-		printf("FC\n");
+		printf("Forward checking\n");
 		res = forwardChecking(grid, lineSize, contraintes, nbContraintes);
 
 		end = clock();
@@ -551,8 +559,12 @@ int main(int argc, char * argv[]) {
 		if (res < 0) {
 			fprintf(stderr, "Erreur de forwardChecking\n");	
 		}
+		
+		printf("==========================================\n");
 	}
 	if (doBackTrack) {
+		
+		printf("=========Backtract finished=========\n");
 		begin = clock();
 
 		printf("backTrack\n");
@@ -565,6 +577,8 @@ int main(int argc, char * argv[]) {
 		if (res < 0) {
 			fprintf(stderr, "Erreur de backtrack\n");
 		}
+		
+		printf("===================================\n");
 	}
 
 end:

@@ -5,6 +5,9 @@
  */
 AFFECTATION *affectations;
 
+int nbNodesFC = 1;
+int nbConstraintTestedFC = 0;
+
 /**
  * Display an affectation for debug purpose
  * @param affect The affectations
@@ -192,7 +195,7 @@ void rewriteDomain(AFFECTATION * curAff, size_t lineSize) {
 }
 
 /*
- * The heuristic is just to choose the least use value
+ * There is no heuristic here
  */
 int chooseNextValueFC(AFFECTATION *curAff, size_t lineSize, CONTRAINTE *contraintes) {
 
@@ -213,6 +216,8 @@ int chooseNextValueFC(AFFECTATION *curAff, size_t lineSize, CONTRAINTE *contrain
 			for (k = 0; k < curAff->var->indLastConst && consistant; ++k) {
 				curConst = &contraintes[curAff->var->conts[k]];
 
+				nbConstraintTestedFC++;
+				
 				if (!checkConstraintFC(curConst, curAff, lineSize)) {
 					consistant = 0;
 					// If the affectation wasn't concistant, we rollback what we did
@@ -299,6 +304,8 @@ int forwardChecking(CASE *grid, size_t lineSize,
 			if (DEBUG_FC)
 				printf("consistant pour %zu avec la valeur %d\n",
 					curAff->var->ind, curAff->curValue);
+			
+			nbNodesFC++;
 		}				
 		// if we didn't found a concistant affectation
 		if (!consistant) {
@@ -339,11 +346,12 @@ int forwardChecking(CASE *grid, size_t lineSize,
 				}
 			}
 		}
-
 	}
+	
+	
 
 	if (success) {
-		printf("Solution is :\n");
+		printf("One possible solution is :\n");
 		for (i = 0; i < lineSize * lineSize; ++i) {
 
 			AFFECTATION * curAff = &affectations[i];
@@ -357,6 +365,9 @@ int forwardChecking(CASE *grid, size_t lineSize,
 	else {
 		printf("Failure : no solution\n");
 	}
+	
+	printf("Node in the corresponding tree : %d\n", nbNodesFC);
+	printf("Number of constraint test : %d\n", nbConstraintTestedFC);
 		
 	freeFC(grid, lineSize);
 	return success;

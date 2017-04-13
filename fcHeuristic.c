@@ -18,6 +18,9 @@ AFFECTATION **varWithDiffConstraint;
 // (It reallys doesn\'t work with affectationsFCH)
 AFFECTATION **sortedAffectations;
 
+int nbNodesFCH = 1;
+int nbConstraintTestedFCH = 0;
+
 int *valuesUsage;
 
 /**
@@ -59,9 +62,9 @@ void freeFCH(CASE *grid, size_t lineSize) {
 	}
 	free(affectationsFCH);
 	// Those free cause a segfault
-	/*free(varWithDiffConstraint);
-	 free(affectedVar);
-	 free(sortedAffectations);*/
+	free(varWithDiffConstraint);
+	free(affectedVar);
+	free(sortedAffectations);
 }
 
 void changeDomainFCH(int oldValue, size_t indice, AFFECTATION *origin, AFFECTATION *modifier) {
@@ -255,6 +258,9 @@ int chooseNextValue(AFFECTATION *curAff, size_t lineSize, CONTRAINTE *contrainte
 		consistant = 1;
 		for (k = 0; k < curAff->var->indLastConst && consistant; ++k) {
 			curConst = &contraintes[curAff->var->conts[k]];
+			
+			// Increment the number of tested constraint
+			nbConstraintTestedFCH++;
 
 			if (!checkConstraintFCH(curConst, curAff, lineSize)) {
 				consistant = 0;
@@ -434,6 +440,9 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 			// Sort by valid domain size so that smallest valid domain size is in first 
 			// (regardless of the current value)
 			quickSortMain(sortedAffectations, lineSize * lineSize);
+			
+			// Increment the number of node in the tree
+			nbNodesFCH++;
 		}		
 		// if we didn't found a concistant affectation
 		if (!consistant) {
@@ -501,6 +510,9 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 	else {
 		printf("Failure : no solution\n");
 	}
+	
+	printf("Node in the corresponding tree : %d\n", nbNodesFCH);
+	printf("Number of constraint test : %d\n", nbConstraintTestedFCH);
 
 	if (DEBUG_FCH) {
 		printf("Freeing\n");
