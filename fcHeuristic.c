@@ -46,7 +46,7 @@ void displayAffectationFCH(AFFECTATION *affect, size_t lineSize) {
 
 }
 
-void freeFCH(CASE *grid, size_t lineSize) {
+void freeFCH(CASE *grid, size_t lineSize, int varHeuristicSmallestDomainSize, int diffConstraint, int valueheuristic) {
 	size_t i;
 
 	for (i = 0; i < lineSize * lineSize; ++i) {
@@ -61,10 +61,17 @@ void freeFCH(CASE *grid, size_t lineSize) {
 		free(curAff->previousDomain);
 	}
 	free(affectationsFCH);
-	// Those free cause a segfault
-	free(varWithDiffConstraint);
+	if (diffConstraint) {
+		free(varWithDiffConstraint);
+	}
 	free(affectedVar);
-	free(sortedAffectations);
+	if(varHeuristicSmallestDomainSize) {
+		free(sortedAffectations);
+	}
+	
+	if (valueheuristic) {
+		free(valuesUsage);
+	}
 }
 
 void changeDomainFCH(int oldValue, size_t indice, AFFECTATION *origin, AFFECTATION *modifier) {
@@ -231,20 +238,56 @@ int findLeastUseValue(AFFECTATION *curAff, size_t lineSize) {
 	return leastUseValInd;
 }
 
+int chooseNextValueNoH(AFFECTATION *curAff, size_t lineSize, CONTRAINTE *contraintes) {
+	int consistant = 0;
+	size_t j, k;
+	CONTRAINTE *curConst;
+	for (j = 0; j < lineSize && !consistant; ++j) {
+
+		consistant = 0;
+		if (curAff->curDomain[j] != NO_DOMAINE) {
+
+			curAff->curValue = curAff->curDomain[j];
+			curAff->curDomain[j] = NO_DOMAINE;
+			curAff->curDomainSize--;
+
+			// Check constraint
+			consistant = 1;
+			for (k = 0; k < curAff->var->indLastConst && consistant; ++k) {
+				curConst = &contraintes[curAff->var->conts[k]];
+
+				nbConstraintTestedFCH++;
+				
+				if (!checkConstraintFCH(curConst, curAff, lineSize)) {
+					consistant = 0;
+					// If the affectation wasn't concistant, we rollback what we did
+					rewriteDomainFCH(curAff, lineSize);
+					if (DEBUG_FCH) {
+						printf("failed for %d: \n", curAff->curValue);
+						displayAffectationFCH(curAff, lineSize);
+					}
+				}
+			}
+		}
+	}
+	return consistant;
+}
+
 /*
  * The heuristic is just to choose the least use value
  */
-int chooseNextValue(AFFECTATION *curAff, size_t lineSize, CONTRAINTE *contraintes) {
+int chooseNextValue(AFFECTATION *curAff, size_t lineSize, CONTRAINTE *contraintes, int valueheuristic) {
 
+	if (!valueheuristic) {
+		return chooseNextValueNoH(curAff, lineSize, contraintes);
+	}
+	
 	int consistant = 0;
 	ssize_t leastUseVal;
 	size_t k;
 	CONTRAINTE *curConst;
 	
 	leastUseVal = findLeastUseValue(curAff, lineSize);
-	/*for (k = 0; k < lineSize; ++k) {
-		printf("%i, ", valuesUsage[k]);
-	}*/
 	while(!consistant && leastUseVal > -1) {
 		
 		curAff->curValue = curAff->curDomain[leastUseVal];
@@ -280,32 +323,53 @@ int chooseNextValue(AFFECTATION *curAff, size_t lineSize, CONTRAINTE *contrainte
 	return consistant;
 }
 
+AFFECTATION *chooseNextVarNoH(size_t lineSize) {
+	
+	size_t i;
+	AFFECTATION *curAff = NULL;
+	
+	for (i = 0; i < lineSize * lineSize; ++i) {
+		
+		if((&affectationsFCH[i])->curValue == NO_DOMAINE) {
+			curAff = &affectationsFCH[i];
+			break;
+		}
+	}
+	return curAff;
+}
 /*
  * The heuristics we use :
  * - First we search for smallest valid domain size if it is < lineSize / 2 (affecationsFCH is sorted)
  * - Then we search for var with constraint other than '!=' ('<' or '>')
  * - Finally we take the var with smallest valid domain size above lineSize / 2
  */
-AFFECTATION *chooseNextVar(size_t lineSize) {
+AFFECTATION *chooseNextVar(size_t lineSize, int varHeuristicSmallestDomainSize, int diffConstraint) {
+	
+	// If no heuristic should be applied
+	if (!varHeuristicSmallestDomainSize && !diffConstraint) {
+		return chooseNextVarNoH(lineSize);
+	}
 
 	AFFECTATION *curAff = NULL;
 	size_t i, j;
 
-	// Choose next var which is the one with the smallest domain size wich is < lineSize / 2
-	for (i = 0; i < lineSize * lineSize; ++i) {
-		
-		if (sortedAffectations[i]->curValue == NO_DOMAINE) {
-			// If the current valid domain size is > to lineSize / 2 looks for an other heuristic
-			if (sortedAffectations[i]->curDomainSize > lineSize / 2) {
-				break;
+	if (varHeuristicSmallestDomainSize) {
+		// Choose next var which is the one with the smallest domain size wich is < lineSize / 2
+		for (i = 0; i < lineSize * lineSize; ++i) {
+
+			if (sortedAffectations[i]->curValue == NO_DOMAINE) {
+				// If the current valid domain size is > to lineSize / 2 looks for an other heuristic
+				if (sortedAffectations[i]->curDomainSize > lineSize / 2) {
+					break;
+				}
+				curAff = sortedAffectations[i];
+				return curAff;
 			}
-			curAff = sortedAffectations[i];
-			return curAff;
 		}
 	}
 
-	// Choose a var which has a constraint other than DIF
-	if (varWithDiffConstraintLastInd > 0) {
+	if (diffConstraint) {
+		// Choose a var which has a constraint other than DIF
 		for (j = 0; j < varWithDiffConstraintLastInd; ++j) {
 			if (varWithDiffConstraint[j]->curValue == NO_DOMAINE) {
 				curAff = varWithDiffConstraint[j];
@@ -314,19 +378,26 @@ AFFECTATION *chooseNextVar(size_t lineSize) {
 		}
 	}
 
-	// Choose next var which is the one with the smallest domain size
-	for (; i < lineSize * lineSize; ++i) {
-		if (sortedAffectations[i]->curValue == NO_DOMAINE) {
-			curAff = sortedAffectations[i];
-			return curAff;
+	if (varHeuristicSmallestDomainSize) {
+		// Choose next var which is the one with the smallest domain size
+		for (; i < lineSize * lineSize; ++i) {
+			if (sortedAffectations[i]->curValue == NO_DOMAINE) {
+				curAff = sortedAffectations[i];
+				return curAff;
+			}
 		}
+	}
+	// If the default heuristic shoudn't be used, use default process
+	else {
+		return chooseNextVarNoH(lineSize);
 	}
 
 	return curAff;
 }
 
 int fcHeuritic(CASE *grid, size_t lineSize,
-		CONTRAINTE *contraintes, size_t nbContraintes) {
+		CONTRAINTE *contraintes, size_t nbContraintes, int varHeuristicSmallestDomainSize, 
+		int diffConstraint, int valueheuristic) {
 
 	if (nbContraintes == 0 || contraintes == NULL || grid == NULL ||
 			lineSize == 0) {
@@ -337,12 +408,21 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 	affectationsFCH = malloc(lineSize * lineSize * sizeof (AFFECTATION));
 	changedDomainFCH = malloc(lineSize * lineSize * sizeof (OLD_DOM*));
 	affectedVar = malloc(lineSize * lineSize * sizeof (AFFECTATION*));
-	varWithDiffConstraint = malloc(lineSize * lineSize * sizeof (AFFECTATION*));
-	valuesUsage = malloc(lineSize * sizeof (int));
-	sortedAffectations = malloc(lineSize * lineSize * sizeof (AFFECTATION*));
-
-	for (i = 0; i < lineSize; ++i) {
-		valuesUsage[i] = 0;
+	
+	if(diffConstraint) {
+		varWithDiffConstraint = malloc(lineSize * lineSize * sizeof (AFFECTATION*));
+	}
+	
+	if (valueheuristic) {
+		valuesUsage = malloc(lineSize * sizeof (int));
+		
+		for (i = 0; i < lineSize; ++i) {
+			valuesUsage[i] = 0;
+		}
+	}
+	
+	if(varHeuristicSmallestDomainSize) {
+		sortedAffectations = malloc(lineSize * lineSize * sizeof (AFFECTATION*));
 	}
 
 	CONTRAINTE *curConst;
@@ -372,7 +452,7 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 		changedDomainFCH[i] = malloc(curAff->var->indLastConst * lineSize * sizeof (OLD_DOM));
 
 		// Test if there is a constraint other than DIF
-		for (j = 0; j < curAff->var->indLastConst; ++j) {
+		for (j = 0; diffConstraint && j < curAff->var->indLastConst; ++j) {
 			curConst = &contraintes[curAff->var->conts[j]];
 			if (curConst->op != DIF) {
 				varWithDiffConstraint[varWithDiffConstraintLastInd] = curAff;
@@ -381,12 +461,16 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 			}
 		}
 		
-		sortedAffectations[i] = curAff;
+		if(varHeuristicSmallestDomainSize) {
+			sortedAffectations[i] = curAff;
+		}
 	}
 	
-	// Sort by valid domain size so that smallest valid domain size is in first 
-	// (regardless of the current value)
-	quickSortMain(sortedAffectations, lineSize * lineSize);
+	if(varHeuristicSmallestDomainSize) {
+		// Sort by valid domain size so that smallest valid domain size is in first 
+		// (regardless of the current value)
+		quickSortMain(sortedAffectations, lineSize * lineSize);
+	}
 	/*for (i = 0; i < lineSize * lineSize; ++i) {
 		printf("var %zu\n", sortedAffectations[i]->var->ind);
 	}*/
@@ -399,7 +483,7 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 	int consistant = 1;
 	
 	AFFECTATION *curAff;
-	curAff = chooseNextVar(lineSize);
+	curAff = chooseNextVar(lineSize, varHeuristicSmallestDomainSize, diffConstraint);
 	
 	size_t k;
 	while (curAff != NULL) {
@@ -415,18 +499,20 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 			displayAffectationFCH(curAff, lineSize);
 		}
 		
-		consistant = chooseNextValue(curAff, lineSize, contraintes);
+		consistant = chooseNextValue(curAff, lineSize, contraintes, valueheuristic);
 		if (consistant) {
 
 			affectedVar[affectedVarInd] = curAff;
 			affectedVarInd++;
 
-			// increment of the value frequency
-			valuesUsage[curAff->curValue -1]++;
+			if (valueheuristic) {
+				// increment of the value frequency
+				valuesUsage[curAff->curValue -1]++;
+			}
 
 			// If we go deeper, we need to save the next var domain
 			// So when it goes up, it can undo the current affectation tested
-			AFFECTATION *nextAff = chooseNextVar(lineSize);
+			AFFECTATION *nextAff = chooseNextVar(lineSize, varHeuristicSmallestDomainSize, diffConstraint);
 			if (nextAff != NULL) {
 				// We save the current domain
 				memmove(nextAff->previousDomain, nextAff->curDomain,
@@ -437,9 +523,11 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 				printf("consistant pour %zu avec la valeur %d\n",
 					curAff->var->ind, curAff->curValue);
 
-			// Sort by valid domain size so that smallest valid domain size is in first 
-			// (regardless of the current value)
-			quickSortMain(sortedAffectations, lineSize * lineSize);
+			if(varHeuristicSmallestDomainSize) {
+				// Sort by valid domain size so that smallest valid domain size is in first 
+				// (regardless of the current value)
+				quickSortMain(sortedAffectations, lineSize * lineSize);
+			}
 			
 			// Increment the number of node in the tree
 			nbNodesFCH++;
@@ -457,10 +545,7 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 					printf("failure for %zu with value %d\n", curAff->var->ind, curAff->curValue);
 				}
 
-				if (curAff->curValue != NO_DOMAINE) {
-
-					curAff->curValue = NO_DOMAINE;
-				}
+				curAff->curValue = NO_DOMAINE;
 				
 
 				// When we go up, we need to undo the values that we just have tested without changing what
@@ -479,8 +564,10 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 				AFFECTATION *previous = affectedVar[affectedVarInd - 1];
 				rewriteDomainFCH(previous, lineSize);
 				
-				// decrement of the value frequency
-				valuesUsage[previous->curValue - 1]--;
+				if (valueheuristic) {
+					// decrement of the value frequency
+					valuesUsage[previous->curValue - 1]--;
+				}
 
 				// Going up
 				previous->curValue = NO_DOMAINE;
@@ -492,7 +579,7 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 				}
 			}
 		}
-		curAff = chooseNextVar(lineSize);
+		curAff = chooseNextVar(lineSize, varHeuristicSmallestDomainSize, diffConstraint);
 	}
 
 	if (success) {
@@ -517,6 +604,6 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 	if (DEBUG_FCH) {
 		printf("Freeing\n");
 	}
-	freeFCH(grid, lineSize);
+	freeFCH(grid, lineSize, varHeuristicSmallestDomainSize, diffConstraint, valueheuristic);
 	return success;
 }

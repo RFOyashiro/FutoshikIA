@@ -474,6 +474,10 @@ int doBackTrack = 0;
 int doForwardChecking = 0;
 int doFcHeurisitques = 0;
 
+int varHeuristicSmallestDomainSize = 1;
+int diffConstraint = 1;
+int valueheuristic = 1;
+
 /**
  * The main
  * @param argc Number of args
@@ -483,7 +487,7 @@ int doFcHeurisitques = 0;
 int main(int argc, char * argv[]) {
 	if (argc - 1 < 2) {
 		fprintf(stderr, "Error on argument. Usage :\nfutoshiki algoChoices <GridfileName>\n");
-		fprintf(stderr, "Algo choices are:\n-b for backtrack\n-f for forward checking\n-fh for forward checking with heuristics");
+		fprintf(stderr, "Algo choices are:\n-b for backtrack\n-f for forward checking\n-fh for forward checking with heuristics [-hn (0 < n < 4)]");
 		exit(EXIT_FAILURE);
 	}
 	
@@ -503,11 +507,23 @@ int main(int argc, char * argv[]) {
 			doFcHeurisitques = 1;
 			continue;
 		}
+		if (strcmp(argv[i], "-h1") == 0) {
+			varHeuristicSmallestDomainSize = 0;
+			continue;
+		}
+		if (strcmp(argv[i], "-h2") == 0) {
+			diffConstraint = 0;
+			continue;
+		}
+		if (strcmp(argv[i], "-h3") == 0) {
+			valueheuristic = 0;
+			continue;
+		}
 		gridFile = openFile(argv[i]);
 		if (gridFile == NULL) {
 			fprintf(stderr, "Impossible d'ouvrir le fichier %s\n", argv[i]);
 			fprintf(stderr, "Error on argument. Usage :\nfutoshiki algoChoices <GridfileName>\n");
-			fprintf(stderr, "Algo choices are:\n-b for backtrack\n-f for forward checking\n-fh for forward checking with heuristics");
+			fprintf(stderr, "Algo choices are:\n-b for backtrack\n-f for forward checking\n-fh for forward checking with heuristics [-hn (0 < n < 4)]");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -528,11 +544,12 @@ int main(int argc, char * argv[]) {
 
 	if (doFcHeurisitques) {
 		
-		printf("=========Forward checking with heuristics finished=========\n");
+		printf("=========Forward checking with heuristics=========\n");
 		begin = clock();
 
 		printf("Forward checking with heuristics\n");
-		res = fcHeuritic(grid, lineSize, contraintes, nbContraintes);
+		res = fcHeuritic(grid, lineSize, contraintes, nbContraintes,
+				varHeuristicSmallestDomainSize, diffConstraint, valueheuristic);
 
 		end = clock();
 		getTimeElapsed(begin, end, Result);
@@ -546,7 +563,7 @@ int main(int argc, char * argv[]) {
 	}
 	if (doForwardChecking) {
 		
-		printf("=========Forward checking finished=========\n");
+		printf("=========Forward checking=========\n");
 		begin = clock();
 
 		printf("Forward checking\n");
@@ -564,7 +581,7 @@ int main(int argc, char * argv[]) {
 	}
 	if (doBackTrack) {
 		
-		printf("=========Backtract finished=========\n");
+		printf("=========Backtract=========\n");
 		begin = clock();
 
 		printf("backTrack\n");

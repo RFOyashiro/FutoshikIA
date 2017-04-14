@@ -10,7 +10,8 @@
 
 #define DEBUG_FCH 0
 
-int fcHeuritic(CASE *grid, size_t lineSize, 
-	CONTRAINTE *contraintes, size_t nbContraintes);
+int fcHeuritic(CASE *grid, size_t lineSize,
+		CONTRAINTE *contraintes, size_t nbContraintes, int varHeuristicSmallestDomainSize, 
+		int diffConstraint, int valueheuristic);
 
 #endif
