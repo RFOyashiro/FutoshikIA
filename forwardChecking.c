@@ -49,12 +49,12 @@ void freeFC(CASE *grid, size_t lineSize) {
 	free(affectations);
 }
 
-void changeDomain(int oldValue, size_t indice, AFFECTATION *origin, AFFECTATION *modifier) {
+void changeDomain(int oldValue, size_t indice, AFFECTATION *origin, AFFECTATION *modified) {
 	OLD_DOM old;
 	old.oldDomainValue = oldValue;
 	old.indice = indice;
 	old.origin = origin;
-	changedDomain[modifier->var->ind][modifier->compt++] = old;
+	changedDomain[modified->var->ind][modified->compt++] = old;
 	if (DEBUG_FC)
 		printf("removed %d from var %zu\n", oldValue, origin->var->ind);
 	origin->curDomain[indice] = NO_DOMAINE;

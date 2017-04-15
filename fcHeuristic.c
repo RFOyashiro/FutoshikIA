@@ -74,12 +74,12 @@ void freeFCH(CASE *grid, size_t lineSize, int varHeuristicSmallestDomainSize, in
 	}
 }
 
-void changeDomainFCH(int oldValue, size_t indice, AFFECTATION *origin, AFFECTATION *modifier) {
+void changeDomainFCH(int oldValue, size_t indice, AFFECTATION *origin, AFFECTATION *modified) {
 	OLD_DOM old;
 	old.oldDomainValue = oldValue;
 	old.indice = indice;
 	old.origin = origin;
-	changedDomainFCH[modifier->var->ind][modifier->compt++] = old;
+	changedDomainFCH[modified->var->ind][modified->compt++] = old;
 	if (DEBUG_FCH)
 		printf("removed %d from var %zu\n", oldValue, origin->var->ind);
 	origin->curDomain[indice] = NO_DOMAINE;
