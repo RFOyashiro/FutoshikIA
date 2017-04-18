@@ -17,9 +17,19 @@
  * \param[in] y The index of the second value. Must be a valide index of tab.
  */
 void swap(AFFECTATION **tab, const size_t x, const size_t y) {
+	/*printf("var x POV %zu\n", tab[x]->var->ind);
+	printf("case x POV %zu\n", tab[x]->var->affectation->var->ind);
+	printf("var y POV %zu\n", tab[y]->var->ind);
+	printf("case y POV %zu\n", tab[y]->var->affectation->var->ind);
+	printf("after\n");*/
 	AFFECTATION *tmp = tab[x];
 	tab[x] = tab[y];
 	tab[y] = tmp;
+	/*printf("var x POV %zu\n", tab[x]->var->ind);
+	printf("case x POV %zu\n", tab[x]->var->affectation->var->ind);
+	printf("var y POV %zu\n", tab[y]->var->ind);
+	printf("case y POV %zu\n", tab[y]->var->affectation->var->ind);
+	printf("\n");*/
 }
 
 /**

@@ -70,7 +70,7 @@ void freeFCH(CASE *grid, size_t lineSize, int varHeuristicSmallestDomainSize, in
 		free(sortedAffectations);
 	}
 	
-	// This free cause some wierd free errors
+	// This free causes some wierd free errors
 	/*if (valueheuristic) {
 		free(valuesUsage);
 	}*/
@@ -88,13 +88,17 @@ void changeDomainFCH(int oldValue, size_t indice, AFFECTATION *origin, AFFECTATI
 	origin->curDomainSize--;
 }
 
-int checkConstraintFCH(CONTRAINTE *constraint, AFFECTATION * curAff, size_t lineSize) {
-
+int checkConstraintFCH(CONTRAINTE *constraint, AFFECTATION *curAff, size_t lineSize) {
+	
 	// Must only modify instancied var
 	if (constraint->gauche->affectation->curValue != NO_DOMAINE &&
 			constraint->droite->affectation->curValue != NO_DOMAINE)
 		return 1;
 
+	/*printf("bfore\n");
+	displayAffectationFCH(curAff, lineSize);
+	displayAffectationFCH(constraint->gauche->affectation, lineSize);
+	displayAffectationFCH(constraint->droite->affectation, lineSize);*/
 	int i;
 	switch (constraint->op) {
 		case DIF:
@@ -108,9 +112,14 @@ int checkConstraintFCH(CONTRAINTE *constraint, AFFECTATION * curAff, size_t line
 					}
 				}
 
-				if (constraint->droite->affectation->curDomainSize > 0)
+				if (constraint->droite->affectation->curDomainSize > 0) {
 					return 1;
+				}
 				else {
+					/*printf("error DIF gauche\n");
+					displayAffectationFCH(curAff, lineSize);
+					displayAffectationFCH(constraint->gauche->affectation, lineSize);
+					displayAffectationFCH(constraint->droite->affectation, lineSize);*/
 					return 0;
 				}
 			}
@@ -127,6 +136,10 @@ int checkConstraintFCH(CONTRAINTE *constraint, AFFECTATION * curAff, size_t line
 				if (constraint->gauche->affectation->curDomainSize > 0)
 					return 1;
 				else {
+					/*printf("error DIF droite\n");
+					displayAffectationFCH(curAff, lineSize);
+					displayAffectationFCH(constraint->gauche->affectation, lineSize);
+					displayAffectationFCH(constraint->droite->affectation, lineSize);*/
 					return 0;
 				}
 			}
@@ -148,8 +161,13 @@ int checkConstraintFCH(CONTRAINTE *constraint, AFFECTATION * curAff, size_t line
 
 				if (constraint->droite->affectation->curDomainSize > 0)
 					return 1;
-				else
+				else {
+					/*printf("error SUP gauche\n");
+					displayAffectationFCH(curAff, lineSize);
+					displayAffectationFCH(constraint->gauche->affectation, lineSize);
+					displayAffectationFCH(constraint->droite->affectation, lineSize);*/
 					return 0;
+				}
 			}
 			else {
 				for (i = 0; i < lineSize; i++) {
@@ -163,8 +181,13 @@ int checkConstraintFCH(CONTRAINTE *constraint, AFFECTATION * curAff, size_t line
 
 				if (constraint->gauche->affectation->curDomainSize > 0)
 					return 1;
-				else
+				else {
+					/*printf("error SUP droite\n");
+					displayAffectationFCH(curAff, lineSize);
+					displayAffectationFCH(constraint->gauche->affectation, lineSize);
+					displayAffectationFCH(constraint->droite->affectation, lineSize);*/
 					return 0;
+				}
 			}
 			break;
 
@@ -184,8 +207,13 @@ int checkConstraintFCH(CONTRAINTE *constraint, AFFECTATION * curAff, size_t line
 
 				if (constraint->droite->affectation->curDomainSize > 0)
 					return 1;
-				else
+				else {
+					/*printf("error INF gauche\n");
+					displayAffectationFCH(curAff, lineSize);
+					displayAffectationFCH(constraint->gauche->affectation, lineSize);
+					displayAffectationFCH(constraint->droite->affectation, lineSize);*/
 					return 0;
+				}
 			}
 			else {
 				for (i = 0; i < lineSize; i++) {
@@ -199,8 +227,13 @@ int checkConstraintFCH(CONTRAINTE *constraint, AFFECTATION * curAff, size_t line
 
 				if (constraint->gauche->affectation->curDomainSize > 0)
 					return 1;
-				else
+				else {
+					/*printf("error INF droite\n");
+					displayAffectationFCH(curAff, lineSize);
+					displayAffectationFCH(constraint->gauche->affectation, lineSize);
+					displayAffectationFCH(constraint->droite->affectation, lineSize);*/
 					return 0;
+				}
 			}
 			break;
 		default:
@@ -307,8 +340,8 @@ int chooseNextValue(AFFECTATION *curAff, size_t lineSize, CONTRAINTE *contrainte
 			// Increment the number of tested constraint
 			nbConstraintTestedFCH++;
 
-			if (!checkConstraintFCH(curConst, curAff, lineSize)) {
-				consistant = 0;
+			consistant = checkConstraintFCH(curConst, curAff, lineSize);
+			if (!consistant) {
 				// If the affectation wasn't concistant, we rollback what we did
 				rewriteDomainFCH(curAff, lineSize);
 				if (DEBUG_FCH) {
@@ -528,7 +561,13 @@ int fcHeuritic(CASE *grid, size_t lineSize,
 			if(varHeuristicSmallestDomainSize) {
 				// Sort by valid domain size so that smallest valid domain size is in first 
 				// (regardless of the current value)
-				quickSortMain(sortedAffectations, lineSize * lineSize);
+				// Sadly, on certain grid, sorting the array creats probleme in pointers that make the algorithm false
+				//quickSortMain(sortedAffectations, lineSize * lineSize);
+				/*for (i = 0; i < lineSize * lineSize; ++i) {
+					printf("%zu, ", sortedAffectations[i]->var->ind);
+				}
+				printf("\n");*/
+				//getchar();
 			}
 			
 			// Increment the number of node in the tree
