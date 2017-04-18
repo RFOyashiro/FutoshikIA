@@ -61,15 +61,17 @@ void freeFCH(CASE *grid, size_t lineSize, int varHeuristicSmallestDomainSize, in
 		free(curAff->previousDomain);
 	}
 	free(affectationsFCH);
-	/*if (diffConstraint) {
+	free(affectedVar);
+	
+	if (diffConstraint) {
 		free(varWithDiffConstraint);
 	}
-	free(affectedVar);
 	if(varHeuristicSmallestDomainSize) {
 		free(sortedAffectations);
 	}
 	
-	if (valueheuristic) {
+	// This free cause some wierd free errors
+	/*if (valueheuristic) {
 		free(valuesUsage);
 	}*/
 }
