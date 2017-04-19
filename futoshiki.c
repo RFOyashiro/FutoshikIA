@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+// Var used to mesure time
 clock_t begin, end;
 
 // Total number of constraint
@@ -470,12 +471,20 @@ void freeGridAndConstraints() {
 	free(contraintes);
 }
 
+// Parameters of the programm
+// -b
 int doBackTrack = 0;
+// -f
 int doForwardChecking = 0;
+// -fh
 int doFcHeurisitques = 0;
 
+// heuristics parameters (only effective with -fh)
+// -h1
 int varHeuristicSmallestDomainSize = 1;
+// -h2
 int diffConstraint = 1;
+// -h3
 int valueheuristic = 1;
 
 /**

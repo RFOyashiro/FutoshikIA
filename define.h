@@ -64,10 +64,15 @@ struct AFFECTATION_ {
 	int *previousDomain;
 };
 
-
+/**
+ * Structure to keep trace of domain before modifications (only used in forward checking)
+ */
 struct OLD_DOM_ {
+	// The old value
 	int oldDomainValue;
+	// The index of the modified value in the domain array
 	int indice;
+	// The modifier
 	AFFECTATION * origin;
 };
 /**

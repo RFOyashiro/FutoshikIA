@@ -5,7 +5,9 @@
  */
 AFFECTATION *affectations;
 
+// Number of nodes in the corresponding tree
 int nbNodesBT = 1;
+// Number of constraint tested
 int nbConstraintTestedBT = 0;
 
 /**

@@ -5,7 +5,16 @@
  */
 AFFECTATION *affectations;
 
+/**
+ * The matrix of changed domain. It's to remember all domain modifications to cancel them in case of failure.
+ * The first level array size is lineSize * lineSize, one sub array for each var. In each sub array we create an OLD_DOM
+ * variable when this var makes a domain modification.
+ */
+OLD_DOM **changedDomain;
+
+// The number of nodes in the corresponding tree
 int nbNodesFC = 1;
+// The number of constraint tested
 int nbConstraintTestedFC = 0;
 
 /**
@@ -30,16 +39,21 @@ void displayAffectationFC(AFFECTATION *affect, size_t lineSize) {
 
 }
 
-OLD_DOM **changedDomain;
-
+/**
+ * Free all malloc things and reset everything.
+ * @param grid The grid (to reser affectation)
+ * @param lineSize The size of one line in the grid
+ */
 void freeFC(CASE *grid, size_t lineSize) {
 	size_t i;
 	
+	// Free old domains
 	for (i = 0; i < lineSize * lineSize; ++i) {
 		free(changedDomain[i]);
 	}
 	free(changedDomain);
 	
+	// Free affectations
 	for (i = 0; i < lineSize * lineSize; ++i) {
 		(&grid[i])->affectation = NULL;
 		AFFECTATION *curAff = &affectations[i];
@@ -49,18 +63,32 @@ void freeFC(CASE *grid, size_t lineSize) {
 	free(affectations);
 }
 
-void changeDomain(int oldValue, size_t indice, AFFECTATION *origin, AFFECTATION *modified) {
+/**
+ * Replace a value in a domain with NO_DOMAINE
+ * @param oldValue The old value.
+ * @param indice The index of the value in the domain.
+ * @param origin The modified affectation.
+ * @param modified The modifier affectation.
+ */
+void changeDomain(int oldValue, size_t indice, AFFECTATION *origin, AFFECTATION *modifier) {
 	OLD_DOM old;
 	old.oldDomainValue = oldValue;
 	old.indice = indice;
 	old.origin = origin;
-	changedDomain[modified->var->ind][modified->compt++] = old;
+	changedDomain[modifier->var->ind][modifier->compt++] = old;
 	if (DEBUG_FC)
 		printf("removed %d from var %zu\n", oldValue, origin->var->ind);
 	origin->curDomain[indice] = NO_DOMAINE;
 	origin->curDomainSize--;
 }
 
+/**
+ * Apply a constraint and check if it is consistant.
+ * @param constraint The constraint to test.
+ * @param curAff  The current affectation.
+ * @param lineSize The size of one line in the grid.
+ * @return 1 if consistant, 0 otherwise.
+ */
 int checkConstraintFC(CONTRAINTE *constraint, AFFECTATION * curAff, size_t lineSize) {
 	
 	// Must only modify instancied var
@@ -69,18 +97,24 @@ int checkConstraintFC(CONTRAINTE *constraint, AFFECTATION * curAff, size_t lineS
 		return 1;
 	
 	int i;
+	// Check constraint type
 	switch (constraint->op) {	
 		case DIF:
+			// Check if we need to apllay modifications on left or right operand
 			if (constraint->gauche->affectation == curAff) {
+				// For each value of the domain
 				for (i = 0; i < lineSize; i++){
+					// Look for the value to modifiy
 					if (constraint->droite->affectation->curDomain[i] != NO_DOMAINE && 
 							constraint->droite->affectation->curDomain[i] == curAff->curValue) {
 						
+						// Change the domain
 						changeDomain(constraint->droite->affectation->curDomain[i], 
 								i, constraint->droite->affectation, curAff);
 					}
 				}
 				
+				// The is still a valid value in the domain then the affectation is consistant with this constraint
 				if (constraint->droite->affectation->curDomainSize > 0) 
 					return 1;
 				else 
@@ -179,11 +213,16 @@ int checkConstraintFC(CONTRAINTE *constraint, AFFECTATION * curAff, size_t lineS
 	}
 }
 
-void rewriteDomain(AFFECTATION * curAff, size_t lineSize) {
+/**
+ * Cancel every modifications made by an affectation.
+ * @param curAff The affectation to cancel.
+ */
+void rewriteDomain(AFFECTATION * curAff) {
 	
 	if (DEBUG_FC)
 		printf("backing %zu\n", curAff->var->ind);
 	int i;
+	// For all modifications
 	for (i = 0; i < curAff->compt; i++) {
 		OLD_DOM *old = &changedDomain[curAff->var->ind][i];
 		old->origin->curDomain[old->indice] = old->oldDomainValue;
@@ -194,14 +233,19 @@ void rewriteDomain(AFFECTATION * curAff, size_t lineSize) {
 	curAff->compt = 0;
 }
 
-/*
- * There is no heuristic here
+/**
+ * Choose the next consistant value.
+ * @param curAff The current affectation.
+ * @param lineSize The size of one line in the grid.
+ * @param contraintes All the constraints
+ * @return 1 if a consistant value has been found, 0 otherwise.
  */
 int chooseNextValueFC(AFFECTATION *curAff, size_t lineSize, CONTRAINTE *contraintes) {
 
 	int consistant = 0;
 	size_t j, k;
 	CONTRAINTE *curConst;
+	// Test domain values while it is not consistant
 	for (j = 0; j < lineSize && !consistant; ++j) {
 
 		consistant = 0;
@@ -213,6 +257,7 @@ int chooseNextValueFC(AFFECTATION *curAff, size_t lineSize, CONTRAINTE *contrain
 
 			// Check constraint
 			consistant = 1;
+			// Test all this var constraints with this value
 			for (k = 0; k < curAff->var->indLastConst && consistant; ++k) {
 				curConst = &contraintes[curAff->var->conts[k]];
 
@@ -221,7 +266,7 @@ int chooseNextValueFC(AFFECTATION *curAff, size_t lineSize, CONTRAINTE *contrain
 				if (!checkConstraintFC(curConst, curAff, lineSize)) {
 					consistant = 0;
 					// If the affectation wasn't concistant, we rollback what we did
-					rewriteDomain(curAff, lineSize);
+					rewriteDomain(curAff);
 					if (DEBUG_FC) {
 						printf("failed for %d: \n", curAff->curValue);
 						displayAffectationFC(curAff, lineSize);
@@ -233,6 +278,14 @@ int chooseNextValueFC(AFFECTATION *curAff, size_t lineSize, CONTRAINTE *contrain
 	return consistant;
 }
 
+/**
+ * Apply forward checking algorithim to solve futoshiki grid
+ * @param grid  The grid to solve
+ * @param lineSize The size of one line in the grid
+ * @param contraintes The constraints of the gride var
+ * @param nbContraintes The number of constraint of the grid var
+ * @return 1 if solution found, 0 otherwise
+ */
 int forwardChecking(CASE *grid, size_t lineSize,
 		CONTRAINTE *contraintes, size_t nbContraintes) {
 
@@ -337,7 +390,7 @@ int forwardChecking(CASE *grid, size_t lineSize,
 				// We also need to rewrite things that have been to change by previous var before 
 				// taking another value
 				curAff = &affectations[currentVarInd - 1];
-				rewriteDomain(curAff, lineSize);
+				rewriteDomain(curAff);
 				
 				// Going up
 				currentVarInd -= 2;
@@ -348,10 +401,10 @@ int forwardChecking(CASE *grid, size_t lineSize,
 		}
 	}
 	
-	
-
+	// If we found a solution
 	if (success) {
 		printf("One possible solution is :\n");
+		// Display the solution found
 		for (i = 0; i < lineSize * lineSize; ++i) {
 
 			AFFECTATION * curAff = &affectations[i];
